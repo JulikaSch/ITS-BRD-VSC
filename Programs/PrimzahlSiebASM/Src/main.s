@@ -1,55 +1,30 @@
-;******************** (C) COPYRIGHT HAW-Hamburg ********************************
-;* File Name          : main.s
-;* Author             : Silke Behn	
-;* Version            : V1.0
-;* Date               : 01.06.2021
-;* Description        : This is a simple main.
-;					  :
-;					  : Replace this main with yours.
-;
-;*******************************************************************************
-    EXTERN initITSboard
-    EXTERN lcdPrintS            ;Display ausgabe
-    EXTERN GUI_init
-;	EXTERN TP_Init
+### sieb  ###
 
-;********************************************
-; Data section, aligned on 4-byte boundery
-;********************************************
-	
-	AREA MyData, DATA, align = 2
-	
-	    GLOBAL text
-DEFAULT_BRIGHTNESS DCW  800
-	
-text	DCB	"Hallo liebes TI-Labor (asm-project)",0
+//final int n = 1000 -> wenn wir später n lesen kommt 100 raus
 
-;********************************************
-; Code section, aligned on 8-byte boundery
-;********************************************
+//byte[] sieb = new byte [n +1 ]; 0 = primzahl, 1 = keine primzahl , wir zählen von 0 bis 1000 deswegen n + 1
+//sieb [0] = 1;
+//sieb [1] = 1; ->0 und 1 sind keine primzahlen wir nehmen sie vorher aus der menge
 
-	AREA |.text|, CODE, READONLY, ALIGN = 3
-
-;--------------------------------------------
-; main subroutine
-;--------------------------------------------
-	EXPORT main [CODE]
-	
-main	PROC
-        ;BL initITSboard
-		;ldr r1, =DEFAULT_BRIGHTNESS
-		;ldrh r0, [r1]
-		;bl GUI_init
-		;mov r0, #0x00
-;		;bl TP_Init
-		
-		;LDR	r0,=text
-        ;BL  lcdPrintS 
+// int i = 2 
+// while (i * i <= n) -> solange i * i kleiner als 1000 mach weiter
+// wird nur bis i * 31 laufen
+//if (sieb[i] == 0)
+//int j = i * i
+//while (j <= n) {
+	sieb [j] = 1;  // sieb an der stelle 4 = 1 also keine primzahl
+	j = j + i;	
+}
+// i = i + 1;
 
 
-forever	b	forever		; nowhere to retun if main ends		
-		ENDP
-	
-		ALIGN
-       
-		END
+## abspeichern ##
+
+//short [] primzahlen = new short [170];  // array mit bites, 
+//int k = 0 ; 
+//for (int n = 2; n <= n; n = n + 1) {
+	if (sieb[n]) == 0) {
+		primzahlen[k] = (short) n; 
+		k = k +1; 
+	}
+}
