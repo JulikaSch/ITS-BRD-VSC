@@ -20,11 +20,11 @@
 
 ## abspeichern ##
 
-//short [] primzahlen = new short [170];  // array mit bites, 
+//short [] primzahlen = new short [168];  // array mit bites, 
 //int k = 0 ; 
-//for (int n = 2; n <= n; n = n + 1) {
-	if (sieb[n]) == 0) {
-		primzahlen[k] = (short) n; 
-		k = k +1; 
+//for (int p = 2; p <= n; p = p + 1) {
+	if (sieb[p]) == 0) {
+		primzahlen[k] = (short) p; 
+		k = k +1; // laufe das Feld Primzahl durch: Bei neu gefundener Primzahl trage den Indize von "Sieb" in "Primzahlen" neu ein
 	}
 }
