@@ -31,7 +31,11 @@ main	PROC
 ;XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 ;START SIEB-ALGORHITMUS
 ;--------------------------------------------
-
+	ldr r2,=SiebFeld					; Startadresse von Sieb laden
+	ldr r5, =Var_n
+	ldrh r5, [r5]						; r5 = 1000
+	
+    
 ;--------------------------------------------
 ;START ÄUSSERE WHILE-SCHLEIFE
 ;--------------------------------------------
@@ -42,9 +46,7 @@ main	PROC
 
 while_01
 	mul r1,r0,r0						; r1 = i * i
-    ldr r5, =Var_n
-	ldrh r5, [r5]						; r5 = 1000
-	cmp r1, r5
+    cmp r1, r5							; r5 = n = 1000
    	bls do_01              				; Sprung wenn ls -> less or equal für unsigned. branch Laufbedingung
    	b   endwhile_01
 
@@ -60,8 +62,7 @@ do_01
 ;---if (sieb[i] == 0)---
 
 if_02
-	ldr r2,=SiebFeld					; Startadresse von Sieb laden
-    ldrb r3,[r2,r0]						; r2 = Basisadresse, r0 = i = Offset, r3 = Sieb[i] = Sieb[r0]
+	ldrb r3,[r2,r0]						; r2 = Basisadresse, r0 = i = Offset, r3 = Sieb[i] = Sieb[r0]
 	cmp r3, #0
     beq then_02							; Springe, wenn Sieb[i] = 0
     b   endif_02
@@ -75,18 +76,18 @@ then_02
 ;--------------------------------------------
 ;START INNERE WHILE-SCHLEIFE
 ;--------------------------------------------
+	mov r3, #1							; temp: r3 = 1 = keine Prim
 
 ;---while (j <= n)---
 
 while_03
  	cmp r4, r5							; r5 = n = 1000
-    bls do_03							; springen, wenn r4 <= n
+    blo do_03							; springen, wenn r4 <= n
     b   endwhile_03
 
 ;---do: Vielfaches markieren (Sieb[j]=1) und Inkrement Laufvar:j = j + i---
 
 do_03
-	mov r3, #1							; temp: r3 = 1 = keine Prim. TODO Optimierung: #1 nicht in jeder Iteration neu ins Register schreiben
 	strb r3, [r2, r4]					; r2 = Basisadresse Sieb, r4 = j. Also Sieb[j] = 1
     add r4, r4, r0						; Inkrementierung der Laufvar.:  j = j + i
     b   while_03
@@ -123,7 +124,6 @@ endwhile_01
 ;START ABSPEICHERN-ALGORHITMUS
 ;--------------------------------------------
 	ldr r3, =PrimzahlenFeld				; r3 = Basisadresse von PrimzahlenFeld
-	add r3, #2							; schreibe die 1. Primzahl an 1. statt an 0. Stelle ins Feld
 	mov r1, #0							; r1 = k = Primzahlen-Eintrags-"Zeiger"
 
 ;--------------------------------------------
