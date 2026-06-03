@@ -3,15 +3,17 @@
 ; 
 ;************************************************
     AREA MyData, DATA, ALIGN = 2
-Var_n		DCW		1000
-Var_ndiv2	DCW		500			
-SiebFeld			FILL 1000, 0
-PrimzahlenFeld		FILL 500
+Var_n				DCW		1000
+Var_prim_grob		DCB		200
+			
+SiebFeld			DCB	 1
+					DCB  1
+					FILL 998, 0
+PrimzahlenFeld		FILL 400, 0, 2
 
     EXPORT SiebFeld
 	EXPORT PrimzahlenFeld
 	EXPORT Var_n
-	EXPORT Var_ndiv2
                   
 
 ;***********************************************
@@ -96,7 +98,7 @@ endwhile_03
 ;--------------------------------------------
 
 
-	b   endif_02    					; weglassen oder für Übersicht drin lassen?
+	
 endif_02
 
 ;--------------------------------------------
@@ -109,6 +111,77 @@ endwhile_01
 
 ;--------------------------------------------
 ;ENDE ÄUSSERE WHILE-SCHLEIFE
+;--------------------------------------------
+
+;--------------------------------------------
+;ENDE SIEB-ALGORHITMUS
+;XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+;--------------------------------------------
+
+;--------------------------------------------
+;XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+;START ABSPEICHERN-ALGORHITMUS
+;--------------------------------------------
+	ldr r3, =PrimzahlenFeld				; r3 = Basisadresse von PrimzahlenFeld
+	add r3, #2							; schreibe die 1. Primzahl an 1. statt an 0. Stelle ins Feld
+	mov r1, #0							; r1 = k = Primzahlen-Eintrags-"Zeiger"
+
+;--------------------------------------------
+;START FOR-SCHLEIFE
+;--------------------------------------------
+
+;---for (p = 2; p <= n; p++):
+for_04
+	mov r0, #2							; r0 = p = 2, setze Laufvariable = Startwert
+
+until_04
+	cmp r0, r5							; Abbruchbedingung: p > n, r5 = n = 1000
+	bhi enddo_04
+
+do_04									; Anweisungsblock mit innerer if-Bed.
+
+;--------------------------------------------
+;START IF-BEDINGUNG
+;--------------------------------------------
+
+;---if (sieb[p] == 0):
+if_05
+	ldrb r4, [r2, r0]					; r4 = Sieb[p]; r2 = Basisadresse-Sieb; r0 = p = Offset
+	cmp r4, #0							; Springe, wenn Sieb[p] = Sieb[r0] == 0	
+	beq then_05
+	b	endif_05
+
+
+;---then: prim[k] = p; k++ 
+then_05									
+	strh r0, [r3, r1]					; Prim[k] = p also Prim[r1] = r0,
+										; also r3 = Basisadresse Prim, r1 = k = Offset; r0 = p = Primzahl
+	add r1, #2							; k++, Inkrementierung des Feldzeigers für PrimFeld um 2 Byte
+
+
+
+endif_05
+
+;--------------------------------------------
+;ENDE IF-BEDINGUNG
+;--------------------------------------------
+
+step_04
+	add r0, #1							; Laufvar.  inkrementieren: p = p + 1
+	b 	until_04
+
+enddo_04
+
+
+
+;--------------------------------------------
+;ENDE FOR-SCHLEIFE
+;--------------------------------------------
+
+
+;--------------------------------------------
+;ENDE ABSPEICHERN-ALGORHITMUS
+;XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 ;--------------------------------------------
 
 
