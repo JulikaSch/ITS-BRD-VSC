@@ -33,14 +33,6 @@ kann durch S5 -> INIT wechseln
 
 ### Hardware initialisieren
 
-### updatedState
-Variable state DCB:
-#0x00 = INIT
-#0x01 = RUNNING
-#0x11 = HOLD
-
-INIT, RUNNING und HOLD im Kopf als Konstanten definieren. 
-
 
 ### LEDs Ansteuern
 #### AUSLESEN:
@@ -90,9 +82,11 @@ INPUT: 0, 1, 2, 3 oder ff (entsprechend dafür, welche Lampen aus sollen)
 3. elseif (state == RUNNING = #0x01): D8 an = #1 an
 4. elseif (state == HOLD = #0x11): D8, D9 an = #3 an 
 
+
+
 ### Taster abfragen
-16-Bit-Muster an Adresse GPIO_F_PIN. 
-Bit entspricht jeweils einem Taster.
+16-Bit-Muster an Adresse GPIO_F_PIN.
+Bit entspricht jeweils Bit entspricht jeweils einem Taster.
 Bits: 1 = Taster nicht gedrückt. 0 = Taster gedrückt. 
 
 and #0xff -> setzt irrelevante Bits auf 1.
@@ -102,7 +96,14 @@ and #0xff -> setzt irrelevante Bits auf 1.
 #0xbf = 1011 1111 = nur S6 gedrückt
 #0xdf = 1101 1111 = nur S5 gedrückt
 
-FRAGE: ignorieren, wenn mehrere relevante Taster gedrückt sind?
+Unterprogramm überprüft, ob eine bestimmte Taste gedrückt wurde. Bekommt Zahl zwischen 0 und 7 übergeben (Taster) und gibt 1= true oder 0 = false über r0 zurück.
+
+1. ließ Taster-Bitmuster aus
+2. Bitmaske #1 LSL um input-parameter r0
+3. betrachte nur das Bit, was dem gefragten Taster entspricht -> AND r_Taster, r_Bitmaske
+4. invertiere das gelesene Bit 
+5. schiebe das gelesene Bit nach ganz rechts
+
 
 #### AUSLESEN = readButtons:
 1. Adresse von GPIO_F_PIN laden
@@ -138,8 +139,8 @@ ließt den Zeitstempel aus und gibt die Zeitdifferenz zwischen jetzt und seinem 
 1. Adresse von TIMER in Register laden
 2. Inhalt in Register laden -> Zeitstempel
 3. neuen Zeitstempel in Variable o. Register speichern
-4. aktuellen - vorigen Zeitstempel = vergangene Zeit
-5. timeStampOLD überschreiben mit neuem Wert bzw. als return über r0 / r1
+4. aktuellen - vorigen Zeitstempel = vergangene Zeit = timeDeltaRAW (vielleicht nur über In/output, keine eigene Variable) -> return r0
+5. timeStampOLD überschreiben mit neuem Zeitstempel
 
 timeStampOLD muss bei Timerstart = 0 sein. 
 Aufruf von UpdateClk:
@@ -148,22 +149,88 @@ Aufruf von UpdateClk:
 
 
 ### checkTime
-ließt den Zeitgeber aus und aktualisiert die Variable, die die Zietspanne der Stoppuhr speichert.
+ließt den Zeitgeber aus und aktualisiert die Variable, die die Zeitspanne der Stoppuhr speichert.
 
-1. UpdatesClk 
-2. timeStopped = timeStopped + timeStampOLD
+1. UpdateClk 
+2. timeStoppedRAW = timeStoppedRAW + timeDeltaRAW (also Rückgabewert aus UpdateClk)
+
+timeStoppedRaw muss bei Timerstart = 0 gesetzt werden!
 
 
-### Zeit umrechnen
-vergangene Zeit ist in Variablen/ Register timeRAW gespeichert in 10us.
+### convertTime 
+ohne Input / Output, sondern über Speicherzugriffe
+vergangene Zeit ist in Variablen/ Register timeStoppedRAW gespeichert in 10us.
 
-timeMM (in min) = timeRAW div 6.000.000 (ohne runden!)
-timeSEK (in sek) = (timeRAW - timeMM) mul 60
-timeNN (in 10ms) = (timeRAW - timeMM - timeSEK) mul 100
 
+timeMM (in min) = timeStoppedRAW div 6.000.000 (ohne runden!)
+timeSEK (in sek) = (timeStoppedRAW mod 6.000.000) div 100.000
+timeNN (in 10ms) = (timeStoppedRAW mod 600.000) div 1.000
+
+speichern in String: 
+timeStringNew = "00:00.00"0
+
+1. Basis-Adresse timeStringNew holen
+2. timeStoppedRaw laden in R5
+3. r10m =   tsr div 60.000.000                     -> String +#0
+4. r1m =    (tsr mod 60.000.000) div 6.000.000     -> String +#1
+5. r10s =   (tsr mod 6.000.000) div 1.000.000      -> String +#3
+6. r1s =    (tsr mod 1.000.000) div 100.000        -> String +#4
+7. r100ms = (tsr mod 100.000) div 10.000           -> String +#6
+8. r10ms =  (tsr mod 10.000) div 1.000             -> String +#7
 
 ### displaytime
 aktualisiert die Zeitanzeige auf dem TFT-Display
+
+1. convertTime
+2. timeStringDisplayed vgl. mit timeStringNew: 
+mit for-Schleife String Zeichen für Zeichen vergleichen und mit printC die eine Stelle ändern, die sich verändert hat. 
+
+for (int i = 0; i < 8 ; i++)
+    if (timeStringNew[i] != timeStringDisplayed[i])
+        setcursor(x=5+i, y=10)
+        printC
+        timeStringDisplayed [i] = timeStringNew [i]
+
+         
+### FSM-Methoden:
+
+#### INIT
+Initialisieren der Zeitvariablen:
+    -> timeStampOLD = 0
+    -> timestoppedRaw = 0
+updateLEDs (Parameter: state (hinter dem ein Bitmustersteht))
+displaytime
+
+#### RUNNING
+updateLEDs (state)
+displaytime
+
+#### HOLD
+updateLEDs (state)
+
+
+### updateState
+
+Variable state DCB:
+#0x00 = INIT
+#0x01 = RUNNING
+#0x11 = HOLD
+
+INIT, RUNNING und HOLD im Kopf als Konstanten definieren. 
+
+
+if (askButton(5)): state = INIT
+elseif (askButton(7))
+{
+    if (state == INIT): Timer resetten mit tim2_erg = 1
+    state = RUNNING
+}
+elseif (askButton(6))
+{
+    if (state == RUNNING): state = HOLD
+}
+
+
 
 
 ### Superloop
@@ -177,12 +244,20 @@ superloop PROC
 
 Rumpf: 
 1. checkTime
-2. readButtons
+2. readButtons  
 3. updateState
-4. if (State == INIT): timeStopped = 0 
-5. updateLEDs
+4. if (State == INIT): 
+    -> timeStampOLD = 0
+    -> timestoppedRaw = 0
+5. updateLEDs (Parameter: State)
 6. if (! State == HOLD): displayTime
 
 
 
+
+# TODO nach Review am 11.06.: 
+1. LEDsAuslesen nicht nötig
+2. updateLEDs darf nicht den State auslesen. Grundstruktur im Programm: erst states ändern (als Methoden realisieren?)und je nach State entsprechende Methoden mit entsprechenden Parametern aufrufen. 
+3. alle 4 LED-Methoden vllt in eine mergen, die zwar nicht universell ist, aber für diesen Fall gut passt. 
+4. buttonsRead: Mit Bitmaske vor vgl. alle anderen Knöpfe ausblenden (z.B. nur relevante Knöpfe abfragen entsprechend der states)
 
