@@ -29,7 +29,11 @@ TIM2_ERG			equ (TIM2_BASE + 0x14)   ; 16 Bit register, Bit 0 : 1 Restart Timer
 ; define state constants
 INIT				equ 0x00
 RUNNING				equ 0x01
-HOLD				equ 0x02
+HOLD				equ 0x03
+
+; define starting position for cursor
+X_START 			equ 10
+Y_START				equ 5
 
     EXTERN initITSboard
     EXTERN GUI_init
@@ -56,6 +60,7 @@ timeStampOLD		DCD		0				; Zeitstempelvariable für UpdateClk
 timeStoppedRAW		DCD		0				; Variable, die die gestoppte Zeit speichert (noch nicht umgerechnet)
 timeStringNew		DCB		"00:00.00", 0
 timeStringDisplayed DCB		"00:00.00",0
+initString 			DCB		"00:00.00",0
 state				DCB		INIT
 
 ;********************************************
@@ -275,16 +280,14 @@ askButton	PROC
 	lsl r5, r0								; r5 = Bitmaske 
 	and r1, r4, r5							; mit Bitmakske ausschneiden
 	eor r1, r5								; einzelnes Bit invertieren: 1 = Taster gedrückt, 0 = nicht gedrückt
-	lsr r1, r0								; ausgelesenes Bit nach ganz rechts schieben
+	lsr r0, r1, r0							; ausgelesenes Bit nach ganz rechts schieben
 
 	pop {r4-r8,pc}
 	ENDP
 
 ;--------------------------------------------
 ; UPDATE STATES der FSM updaten entsprechend der gedrückten Buttons.
-; erwartet, dass ALLbuttonsRead vorher ausgeführt wurde
-; input r1 
-; 			= 5, 6 oder 7
+; 
 ;
 ; if (Button == 5)): state = INIT
 ; elseif (Button == 7)
@@ -300,45 +303,69 @@ askButton	PROC
 updateState	PROC
 	push {r4-r8,lr}
 
-	ldr r4, =state							; r0 = gedrückter Taster
+	ldr r4, =state							
 	ldr r5, [r4]							; r4 = Adresse von state
 											; r5 = state
 											; r6 = Bitmuster für Init, Running oder Hold
 
-if_state01	
-	cmp r1, #5								; Taste 5 gedrückt?
+if_state01
+
+	mov r0, #5								; Taste 5 gedrückt?
+	bl askButton	
+
+	cmp r1, #1								; 1 = true								
 	beq then_state01
 	b 	elseif_state02
+
 then_state01
+
 	mov r6, #INIT							; ... dann state = INIT
 	strb r6, [r4]
 	b 	endif_state01
+
 elseif_state02
-	cmp r1, #6								; Taste 6 gedrückt?
+
+	mov r0, #6
+	bl askButton							; Taste 6 gedrückt?
+
+	cmp r1, #1								; 1 = true								
 	beq then_state02
 	b 	elseif_state03
+
 then_state02
 
-if_state02									; ...dann innere Kontrollstruktur
+if_state02
+									; ...dann innere Kontrollstruktur
 	mov r6, #RUNNING
 	cmp r5, r6								; if (state == RUNNING)...
 	beq	then_state04
 	b 	endif_state02
+
 then_state04								; ...then state = HOLD
+	
 	mov r6, #HOLD
 	strb r6, [r4]
 	b 	endif_state02
+
 endif_state02								; Ende innere Kontrollstruktur
 
 	b 	endif_state01						; Fortsetzung äußere Kontrollstruktur
+
 elseif_state03
-	cmp r1, #7								; Taster 7 gedrückt?
+	
+	mov r0, #7
+	bl askButton							; Taster 7 gedrückt?
+
+	cmp r1, #1								; 1 = true								
 	beq then_state03
 	b 	endif_state01
+
 then_state03
+	
 	mov r6, #RUNNING
 	strb r6, [r4]							; ... dann state = RUNNING
 	b	endif_state01
+
 endif_state01
 
 	pop {r4-r8,pc}
@@ -416,8 +443,8 @@ convertTime	PROC
 	push {r4-r8,lr}
 
 	ldr r4, =timeStringNew					; r4 = Basisadresse vom String
-	ldr r5, =timeStoppedRAW
-	ldr r5, [r5]							; r5 = timeStoppedRAW
+	ldr r5, =TIMER
+	ldr r5, [r5]							; r5 = TIMER
 											; r6 = wechselnd: Divisoren
 											; r7 = wechselnd: zwischenergebnisse 
 	; 10 Minuten:
@@ -483,7 +510,7 @@ convertTime	PROC
 displayTime	PROC
 	push {r4-r8,lr}
 
-	bl convertTime
+	
 
 	ldr r6, =timeStringNew					; r6 = Adresse von timeStringNew
 	ldr r7, =timeStringDisplayed			; r7 = Adresse von timeStringDisplayed
@@ -506,7 +533,7 @@ then_string02
 
 	mov r0, #10								; setze X-Var auf Stelle von Laufvar. weiter für lcdGotoXY
 	add r0, r4
-	mov r1, #5								; setze Y-Var auf 10
+	mov r1, #5								; setze Y-Var auf 5
 	
 	PUSH {r2-r8, lr}
 	bl lcdGotoXY
@@ -541,17 +568,37 @@ initState	PROC
 											; lösche die beiden Zeitvariablen
 	mov r5, #0
 
-	ldr r4, =timeStampOLD
-	str r5, [r4]
+	;ldr r4, =timeStampOLD
+	;str r5, [r4]
 
-	ldr r4, =timeStoppedRAW
-	str r5, [r4]
+	;ldr r4, =timeStoppedRAW
+	;str r5, [r4]
 
-	ldr r0, =state							; LEDs updaten, Parameter: state
-	ldrb r0, [r0]
+	mov r0, #0									
 	bl LEDsOn
 
-	bl displayTime								
+	;bl displayTime								
+
+if_init
+	
+	mov r0, #7
+	bl askButton							; Taster 7 gedrückt?
+
+	cmp r0, #1								; 1 = true								
+	beq then_init
+	b 	endif_init
+
+then_init
+	
+	mov r6, #RUNNING
+	ldr r4, =state
+	strb r6, [r4]							; ... dann state = RUNNING
+	
+	ldr r0, =TIM2_ERG						; reset Timer GENAU HIER!
+	mov r1, #1
+	strb r1, [r0]
+
+endif_init
 
 	pop {r4-r8,pc}
 	ENDP
@@ -563,10 +610,32 @@ initState	PROC
 runningState	PROC
 	push {r4-r8,lr}
 
+	mov r0, #5								; Taste 5 gedrückt?
+	bl askButton	
+
+if_running
+	cmp r0, #1								; 1 = true								
+	beq then_running
+	b 	endif_running
+
+then_running
+
+	mov r6, #INIT							; ... dann state = INIT
+	strb r6, [r4]
+
+	mov r0, #10
+	mov r1, #5
+	bl lcdGotoXY
+	ldr r0, =initString
+	bl lcdPrintS
+
+endif_running
+
 	ldr r0, =state							; LEDs updaten, Parameter: state
 	ldrb r0, [r0]
 	bl LEDsOn
 
+	bl convertTime
 	bl displayTime	
 	
 	pop {r4-r8,pc}
@@ -609,15 +678,15 @@ main	PROC
 		MOV 	R0, #24
 		bl  	lcdSetFont
 
-		; zur Initialisierung:
+		; zur eigenen Initialisierung:
 
 		bl updateClk
 
-		;mov r0, #10
-		;mov r1, #5
-		;bl lcdGotoXY
-		;ldr r0, =timeStringDisplayed
-		;bl lcdPrintS
+		mov r0, #X_START
+		mov r1, #Y_START
+		bl lcdGotoXY
+		ldr r0, =initString
+		bl lcdPrintS
 
 superloop	PROC
 		;b 	updateClk
@@ -627,63 +696,50 @@ superloop	PROC
 		;mov r6, #RUNNING
 		;str r6, [r5]
 
-		;bl updateState
-
-
-		; DEMO convertTime
-		;ldr r4, =timeStoppedRAW
-		;ldr r5, =67213000
-		;str r5, [r4]
-		;bl convertTime
-		; DEMO erfolgreich, wenn: timeStringNew = "11:12.13"
-
-
-		; DEMO displaytime
+		;bl updateState		
 		
-		;bl displayTime
+	; bl checkTime
+	;bl updateState
 
-		;DEMO ALLES ZUSAMMEN XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-		
-		
-		
-		bl checkTime
-		bl ALLbuttonsRead
-		bl updateState
+	ldr r0, =state					; r0 = state
+	ldrb r0, [r0]
 
-		ldr r0, =state					; r0 = state
-		ldrb r0, [r0]
 
+; ZUSTANDSAUTOMAT
 if_01 
 	
 	cmp r0, #INIT
 	beq then_01
+	b elseif_02 
+
+then_01 
+
+	bl initState
 	b endif_01 
-
-then_01
-											; lösche die beiden Zeitvariablen
-	mov r5, #0
-
-	ldr r4, =timeStampOLD
-	str r5, [r4]
-
-	ldr r4, =timeStoppedRAW
-	str r5, [r4]
 	
-endif_01
+elseif_02 
 
-		bl LEDsOn 
-
-if_02 
-
-	cmp r0, #HOLD
-	bne then_02 
-	b endif_02 
+	cmp r0, #RUNNING
+	beq then_02
+	b elseif_03 
 
 then_02 
+	
+	bl runningState
+	b endif_01 
 
-	bl displayTime
+elseif_03 
 
-endif_02
+	cmp r0, #HOLD
+	beq then_03 
+
+then_03
+
+	bl holdState
+
+endif_01
+
+
 
 		bal superloop
 		ENDP
