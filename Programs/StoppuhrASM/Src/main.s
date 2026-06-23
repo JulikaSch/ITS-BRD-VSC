@@ -56,11 +56,11 @@ Y_START				equ 5
 	AREA MyData, DATA, align = 2
 
 DEFAULT_BRIGHTNESS	DCW     800
-timeStampOLD		DCD		0				; Zeitstempelvariable für UpdateClk
-timeStoppedRAW		DCD		0				; Variable, die die gestoppte Zeit speichert (noch nicht umgerechnet)
 timeStringNew		DCB		"00:00.00", 0
-timeStringDisplayed DCB		"00:00.00",0
-initString 			DCB		"00:00.00",0
+puffer				DCB		0xff
+timeStringDisplayed DCB		"00:00.00", 0
+puffer2				DCB		0xff
+initString 			DCB		"00:00.00", 0
 state				DCB		INIT
 
 ;********************************************
@@ -69,41 +69,17 @@ state				DCB		INIT
 	AREA |.text|, CODE, READONLY, ALIGN = 3
 
 
-;--------------------------------------------
-; OLDUpdateLEDS subroutine
-; input r0: neues Bitmuster für LEDS. 1 = aus, 0 = an
-; input r2: altes/ aktuelles Bitmuster
-; output r2: updated Bitmuster
-;--------------------------------------------
-OLDUpdateLEDS	PROC
-	push {r4-r8,lr}
-
-	mov		r3,#0xff 				; reset LEDs
-	LDR		R1,=GPIO_D_CLR
-	str		R3,[R1]
-
-	eor		r2, r0					; not xor = toggle die Bits über 0, die jetzt neu gedrückt werden
-	mvn		r2, r2
-
-
-	and 	r2,#0xff				; Bitmaske
-	LDR		r1,=GPIO_D_SET
-	str		R2,[R1]	
-
-	pop {r4-r8, pc}
-	ENDP
-
 
 ;--------------------------------------------
 ; LEDs ANSCHALTEN
 ; input r0 
-;			= 0 -> ändert nichts
+;			= #0 -> schaltet alle aus
 ; 			= #1 -> schaltet nur D8 an (Rest bleibt unverändert)
 ;			= #2 -> schaltet nur D9 an (Rest bleibt unverändert)
 ; 			= #3 -> schaltet D8, D9 an
 ;			
 ;--------------------------------------------
-LEDsOn	PROC
+LEDS_SET	PROC
 	push {r4-r8,lr}
 
 	
@@ -111,9 +87,7 @@ LEDsOn	PROC
 	mov r6, #3
 	strh r6, [r5]
 
-	mov	r4, r0
-	and r4, #3								; Bitmaske: 0000 00xx
-
+	and r4, r0, #3								; Bitmaske: 0000 00xx
 
 	ldr r5, =GPIO_D_SET
 	strh r4, [r5]
@@ -121,155 +95,21 @@ LEDsOn	PROC
 	pop {r4-r8,pc}
 	ENDP
 
-;--------------------------------------------
-; LEDs AUSSCHALTEN
-; input r0 
-;			= 0 -> ändert nichts
-; 			= #1 -> schaltet nur D8 aus (Rest bleibt unverändert)
-;			= #2 -> schaltet nur D9 aus (Rest bleibt unverändert)
-; 			= #3 -> schaltet D8, D9 aus (...) 
-;			= #0xff -> schaltet alle aus (aktuell durch Bitmaske ausgestellt)
-;			
-;--------------------------------------------
-LEDsOff	PROC
-	push {r4-r8,lr}
-
-	mov	r4, r0
-	and r4, #3								; Bitmaske: 0000 00xx
-
-	ldr r5, =GPIO_D_CLR
-	strh r4, [r5]
-	
-	pop {r4-r8,pc}
-	ENDP
 
 ;--------------------------------------------
-; LEDs AUSLESEN
-; return r0 
-;			= 0 -> alle aus
-; 			= #1 -> nur D8 an 
-;			= #2 -> nur D9 an 
-; 			= #3 -> D8, D9 an
-;			...
-; 			= #ff -> alle an (aktuell durch Bitmaske ausgestellt)
-;--------------------------------------------
-LEDsRead	PROC
-	push {r4-r8,lr}
-
-	
-	ldr r5, =GPIO_D_PIN
-	ldrh r0, [r5]
-
-	and r0, #3								; Bitmaske: 0000 00xx
-	
-	pop {r4-r8,pc}
-	ENDP
-
-
-;--------------------------------------------
-; updateLEDS
-;			
-; 	passt LEDs an aktuellen Zustand entsprechen der Variablen state an
-;--------------------------------------------
-updateLEDS	PROC
-	push {r4-r8,lr}
-
-	; vielleicht löschen gar nicht nötig?
-	mov r0, #0xff
-	bl LEDsOff								; alle LEDs aus
-
-	ldr r4, =state
-	ldrb r0, [r4]
-	bl LEDsOn								; schaltet LEDs entsprechend dem state an
-	
-	pop {r4-r8,pc}
-	ENDP
-
-
-;--------------------------------------------
-;ALLE Taster AUSLESEN
-; return r1 
-;			= 0 -> alle aus
-; 			= #5 -> nur S5 an 
-;			= #6 -> nur S6 an 
-; 			= #7 -> nur S7 an
-;
-; return r0 
-;			= #0x80 = 1000 0000 -> nur S7 an
-; 			= #0x40 = 0100 0000 -> nur S6 an
-; 			= #0x20 = 0010 0000 -> nur S5 an
-; 				...
-; 
-; für alle Buttons: 
-; 	r4 = #1 = 0000 0001
-; 	for(int i=0; i<8; i++) ...
-;
-; alternativ nur für S5 bis S7: 
-; 	r4 = #0x20 = 0010 0000
-; 	for (int i=5, i<8; i++)
-; 	{
-;		if (r0 == r4)
-; 			{return i, endfor}
-; 		else
-; 			{lsl r4, #1}
-;	}
-;--------------------------------------------
-ALLbuttonsRead	PROC
-	push {r4-r8,lr}
-
-	ldr r4, =GPIO_F_PIN
-	ldrh r0, [r4]
-	mov r4, #0xff							; Bitmaske: 0000 0000 xxxx xxxx
-	eor r0, r4								; 16 Bits invertieren -> 0 = Taster nicht gedrückt 1 = gedrückt
-	and r0, r4								; Bitmaske: schneidet die oberen 16 Bit weg (=0)
-
-for_button
-	mov r5, #5								; HIER START AB 0, WENN ALLE TASTER. SONST ERST AB S5. Startvar. i = 0 (wenn alle Taster)
-	mov r4, #1								; Bitmuster zum vgl ... 0000 0001
-	lsl r4, #5								; WEGKOMMENTIEREN, WENN ALLE TASTER. SONST ERST AB S5
-until_button
-	cmp r5, #8								; for (i<8), Abbruch bei 
-	bge enddo_button
-do_button
-
-; innere if-Bedingung: if( Taster r0 == r4 ): return i = r5, endfor. else: lsl r4, #1
-if_button
-	cmp	r0, r4
-	beq then_button
-	b 	else_button
-then_button
-	mov r1, r5								; return r1 = r5 = i 
-	b enddo_button							; direkt äußere Schleife beenden, weil gedrückten Knopf gefunden
-	;b endif_button
-else_button
-	lsl r4, #1								; Vgl.-Bitmuster um 1 Stelle nach links schieben
-endif_button
-
-step_button
-	add r5, #1
-	b until_button
-enddo_button
-
-	
-
-	pop {r4-r8,pc}
-	ENDP
-
-;--------------------------------------------
-; Taster abfragen
+; ASKBUTTON - Taster abfragen
 ; 
 ; 	gibt true oder false zurück, je nachdem, ob die übergebene
 ; 	Taste gedrückt wurde
 ;
 ; Input r0 
 ;			= 5, 6 oder 7
-; output r1 
+; output r0 
 ; 			= 1 = true
 ; 			= 0 = false
 ;--------------------------------------------
 askButton	PROC
 	push {r4-r8,lr}
-
 									
 	ldr r4, =GPIO_F_PIN
 	ldr r4, [r4]
@@ -278,162 +118,13 @@ askButton	PROC
 	
 	mov r5, #1
 	lsl r5, r0								; r5 = Bitmaske 
-	and r1, r4, r5							; mit Bitmakske ausschneiden
+	and r1, r4, r5							; mit Bitmakske nur das Bit des angefragten Tasters ausschneiden
 	eor r1, r5								; einzelnes Bit invertieren: 1 = Taster gedrückt, 0 = nicht gedrückt
 	lsr r0, r1, r0							; ausgelesenes Bit nach ganz rechts schieben
 
 	pop {r4-r8,pc}
 	ENDP
 
-;--------------------------------------------
-; UPDATE STATES der FSM updaten entsprechend der gedrückten Buttons.
-; 
-;
-; if (Button == 5)): state = INIT
-; elseif (Button == 7)
-; {
-;    if (state == INIT): Timer resetten mit tim2_erg = 1
-;    state = RUNNING
-; }
-; elseif (Button == 6))
-; {
-;    if (state == RUNNING): state = HOLD
-; }
-;--------------------------------------------
-updateState	PROC
-	push {r4-r8,lr}
-
-	ldr r4, =state							
-	ldr r5, [r4]							; r4 = Adresse von state
-											; r5 = state
-											; r6 = Bitmuster für Init, Running oder Hold
-
-if_state01
-
-	mov r0, #5								; Taste 5 gedrückt?
-	bl askButton	
-
-	cmp r1, #1								; 1 = true								
-	beq then_state01
-	b 	elseif_state02
-
-then_state01
-
-	mov r6, #INIT							; ... dann state = INIT
-	strb r6, [r4]
-	b 	endif_state01
-
-elseif_state02
-
-	mov r0, #6
-	bl askButton							; Taste 6 gedrückt?
-
-	cmp r1, #1								; 1 = true								
-	beq then_state02
-	b 	elseif_state03
-
-then_state02
-
-if_state02
-									; ...dann innere Kontrollstruktur
-	mov r6, #RUNNING
-	cmp r5, r6								; if (state == RUNNING)...
-	beq	then_state04
-	b 	endif_state02
-
-then_state04								; ...then state = HOLD
-	
-	mov r6, #HOLD
-	strb r6, [r4]
-	b 	endif_state02
-
-endif_state02								; Ende innere Kontrollstruktur
-
-	b 	endif_state01						; Fortsetzung äußere Kontrollstruktur
-
-elseif_state03
-	
-	mov r0, #7
-	bl askButton							; Taster 7 gedrückt?
-
-	cmp r1, #1								; 1 = true								
-	beq then_state03
-	b 	endif_state01
-
-then_state03
-	
-	mov r6, #RUNNING
-	strb r6, [r4]							; ... dann state = RUNNING
-	b	endif_state01
-
-endif_state01
-
-	pop {r4-r8,pc}
-	ENDP
-
-
-
-;--------------------------------------------
-; TEST-TFT-Display ansteuern
-;--------------------------------------------
-displayAnsteuern	PROC
-	push {r4-r8,lr}
-
-	mov r0,#10								; r0 = X
-	mov r1,#5								; r1 = Y
-	bl lcdGotoXY
-
-	;ldr r0, =timeStopped
-	bl lcdPrintS
-
-	mov r0, #'#'
-	bl lcdPrintC
-
-
-	pop {r4-r8,pc}
-	ENDP
-
-;--------------------------------------------
-; UpdateClk
-; 
-; 	ließt Zeitstempel aus, vergleicht mit Zeitstempel vom vorigen Aufruf (timeStampOLD)
-; 	und gibt Zeitdifferenz (timeDeltaRAW) zurück
-; 
-; return r0 
-;			= timeDeltaRAW 
-;--------------------------------------------
-updateClk	PROC
-	push {r4-r8,lr}
-
-	ldr r4, =TIMER
-	ldr r4, [r4]
-	ldr r5, =timeStampOLD
-	ldr r6, [r5]
-	sub r0, r4, r6								; aktuellen - vorigen Zeitstempel = timeDeltaRAW
-												; return r0 = Zeitdifferenz
-	str r4, [r5]								; timeStampOLD überschreiben mit neuem Wert
-
-
-	pop {r4-r8,pc}
-	ENDP
-
-;--------------------------------------------
-; checkTime
-;
-; 	ließt den Zeitgeber und aktualisiert die gestoppte Zeit (noch nicht umgerechnet!)
-;
-;--------------------------------------------
-checkTime	PROC
-	push {r0-r8,lr}
-
-	bl updateClk								; liefert in r0 die Zeitdifferenz seit letztem updateClk-Aufruf
-	ldr r4, =timeStoppedRAW
-	ldr r5, [r4]
-	add r5, r0
-	str r5, [r4]							; addiere zu timeStoppedRAW die abgefragte Zeitdifferenz
-
-	pop {r0-r8,pc}
-	ENDP
 
 ;--------------------------------------------
 ; CONVERT TIMER
@@ -560,30 +251,52 @@ enddo_string01
 	ENDP
 
 ;--------------------------------------------
-; INIT 
+; resetTimer
+;--------------------------------------------
+resetTimer PROC
+	push{r4-r8,lr}
+
+	ldr r4, =TIM2_ERG						
+	mov r5, #1
+	strb r5, [r4]
+
+	pop {r4-r8, pc}
+	ENDP
+
+;--------------------------------------------
+; preINIT
+; 
+;	wird immer genau dann aufgerufen, wenn aus einem
+; 	anderen Zustand in Init gewechselt werden soll.
+; 	Gibt einmalig 00:00.00 auf dem Bildschirm aus.
+;--------------------------------------------
+preINIT	PROC
+	push {r4-r8,lr}
+
+	mov r0, #10								; preINIT: auf Bildschirm 00:00.00 einmalig ausgeben
+	mov r1, #5
+	bl lcdGotoXY
+	ldr r0, =initString
+	bl lcdPrintS
+
+	pop {r4-r8, pc}
+	ENDP
+
+;--------------------------------------------
+; INIT
 ;--------------------------------------------
 initState	PROC
 	push {r4-r8,lr}
 
-											; lösche die beiden Zeitvariablen
-	mov r5, #0
-
-	;ldr r4, =timeStampOLD
-	;str r5, [r4]
-
-	;ldr r4, =timeStoppedRAW
-	;str r5, [r4]
-
-	mov r0, #0									
-	bl LEDsOn
-
-	;bl displayTime								
+	ldr r0, =state							; LEDs updaten, Parameter: state = 0_00
+	ldrb r0, [r0]							; updateLEDS: 0_00		
+	bl LEDS_SET							
 
 if_init
 	
-	mov r0, #7
-	bl askButton							; Taster 7 gedrückt?
-
+	mov r0, #7								; Taster 7 gedrückt?
+	bl askButton							; -> return: r0
+	
 	cmp r0, #1								; 1 = true								
 	beq then_init
 	b 	endif_init
@@ -594,11 +307,9 @@ then_init
 	ldr r4, =state
 	strb r6, [r4]							; ... dann state = RUNNING
 	
-	ldr r0, =TIM2_ERG						; reset Timer GENAU HIER!
-	mov r1, #1
-	strb r1, [r0]
+	bl resetTimer
 
-endif_init
+endif_init									; ... sonst: tue nichts
 
 	pop {r4-r8,pc}
 	ENDP
@@ -608,36 +319,56 @@ endif_init
 ; RUNNING
 ;--------------------------------------------
 runningState	PROC
+
 	push {r4-r8,lr}
 
-	mov r0, #5								; Taste 5 gedrückt?
-	bl askButton	
+	bl convertTime
+	bl displayTime	
+
+	ldr r0, =state							; LEDs updaten, Parameter: state
+	ldrb r0, [r0]
+	bl LEDS_SET
+
+	ldr r4, =state							; r4 = state
 
 if_running
+
+	mov r0, #5								; Taste 5 gedrückt?
+	bl askButton							; -> return r0
+
 	cmp r0, #1								; 1 = true								
 	beq then_running
-	b 	endif_running
+	b 	elseif_running
 
 then_running
 
 	mov r6, #INIT							; ... dann state = INIT
+	ldr r4, =state							; r4 = state
 	strb r6, [r4]
 
-	mov r0, #10
-	mov r1, #5
-	bl lcdGotoXY
-	ldr r0, =initString
-	bl lcdPrintS
+	bl preINIT								; ... und dann preINIT: auf Bildschirm 00:00.00 einmalig ausgeben
+
+	b endif_running
+	
+elseif_running
+
+	mov r0, #6								;  Taste 6 gedrückt?
+	bl askButton							; -> return r0
+
+	cmp r0, #1								; 1 = true
+	beq thenelse_running
+	b endif_running
+
+thenelse_running
+
+	ldr r4, =state							; ... dann state = HOLD	
+	mov r6, #HOLD
+	strb r6, [r4]
+
+	b endif_running
 
 endif_running
 
-	ldr r0, =state							; LEDs updaten, Parameter: state
-	ldrb r0, [r0]
-	bl LEDsOn
-
-	bl convertTime
-	bl displayTime	
-	
 	pop {r4-r8,pc}
 	ENDP
 
@@ -647,13 +378,49 @@ endif_running
 holdState	PROC
 	push {r4-r8,lr}
 
-	ldr r0, =state							; LEDs updaten, Parameter: state
+	ldr r0, =state							; LEDs updaten, Parameter: state = 0_11 = 0d03
 	ldrb r0, [r0]
-	bl LEDsOn
+	bl LEDS_SET
+
+	ldr r4, =state							; r4 = Adresse von state
+
+if_hold
+
+	mov r0, #5								; Taste 5 gedrückt?
+	bl askButton							; -> return r0
+
+	cmp r0, #1								; 1 = true	
+	beq then_hold
+	b elseif_hold
+
+then_hold 
+
+	mov r6, #INIT							; ... dann state = INIT
+	strb r6, [r4]
+
+	bl preINIT								; preINIT: auf Bildschirm 00:00.00 einmalig ausgeben
+
+	b endif_hold
+
+elseif_hold
+
+	mov r0, #7								; Taster 7 gedrückt?
+	bl askButton							; -> return: r0
+	
+	cmp r0, #1								; 1 = true	
+	beq thenelse_hold
+	b endif_hold
+
+thenelse_hold
+
+	mov r6, #RUNNING
+	ldr r4, =state
+	strb r6, [r4]							; ... dann state = RUNNING
+	
+endif_hold
 
 	pop {r4-r8,pc}
 	ENDP
-
 
 
 ;--------------------------------------------
@@ -680,29 +447,12 @@ main	PROC
 
 		; zur eigenen Initialisierung:
 
-		bl updateClk
-
-		mov r0, #X_START
-		mov r1, #Y_START
-		bl lcdGotoXY
-		ldr r0, =initString
-		bl lcdPrintS
+		bl preINIT						; preINIT: auf Bildschirm 00:00.00 einmalig ausgeben
 
 superloop	PROC
-		;b 	updateClk
-		;bl ALLbuttonsRead
-
-		;ldr r5, =state
-		;mov r6, #RUNNING
-		;str r6, [r5]
-
-		;bl updateState		
 		
-	; bl checkTime
-	;bl updateState
-
-	ldr r0, =state					; r0 = state
-	ldrb r0, [r0]
+	ldr r0, =state						; r0 = state
+	ldrb r0, [r0]						; state auslesen
 
 
 ; ZUSTANDSAUTOMAT
@@ -738,8 +488,6 @@ then_03
 	bl holdState
 
 endif_01
-
-
 
 		bal superloop
 		ENDP

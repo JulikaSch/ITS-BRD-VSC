@@ -27,15 +27,8 @@ Zeigt die gestoppte Zeit auf dem Display an.
 kann durch S7 -> RUNNING wechseln
 kann durch S5 -> INIT wechseln 
 
-
-
-## Teilaufgaben:
-
-### Hardware initialisieren
-
-
-### LEDs Ansteuern
-#### AUSLESEN:
+### allg. LEDs Ansteuern
+#### allg. AUSLESEN:
 GPIO_D_PIN auslesen -> gibt aktuellen Zustand der LEDs an
 16 Bit Muster: 
 #0 = 0000 0000 = alle aus
@@ -50,7 +43,7 @@ GPIO_D_PIN auslesen -> gibt aktuellen Zustand der LEDs an
 5. vergleichen mit cmp eq
 5. return 0, 1, 2 oder 3
 
-#### ANSCHALTEN:
+#### allg. ANSCHALTEN:
 GPIO_D_SET hier schreiben -> 1 = schaltet entsprechende LED an, 0 = bleibt unverändert
 #0 = 0000 0000 = ändert nichts
 #1 = 0000 0001 = schaltet nur D8 an
@@ -63,7 +56,7 @@ INPUT: 0, 1, 2 oder 3 (entsprechend dafür, welche Lampen an sollen)
 2. 16-Bit-Muster = input in Register schreiben
 3. Register-Eintrag an Adresse schreiben
 
-#### AUSSCHALTEN:
+#### allg AUSSCHALTEN:
 GPIO_D_CLR hier schreiben -> 1 = schaltet entsprechende LED aus, 0 = bleibt unverändert
 #0 = 0000 0000 = ändert nichts
 #1 = 0000 0001 = schaltet nur D8 aus
@@ -76,15 +69,29 @@ INPUT: 0, 1, 2, 3 oder ff (entsprechend dafür, welche Lampen aus sollen)
 2. 16-Bit-Muster = input in Register schreiben
 3. Register-Eintrag an Adresse schreiben
 
-### updateLEDs
-1. alle aus
-2. if (state == INIT = #0x00): endif
-3. elseif (state == RUNNING = #0x01): D8 an = #1 an
-4. elseif (state == HOLD = #0x11): D8, D9 an = #3 an 
+### allg: TFT-Display ansteuern
+bereits implementierte Methoden: 
+lcdGotoXY (r0 = X, r1 = Y) -> positioniert Cursor auf Stelle (X, Y)
+lcdPrintS (r0 = Adresse vom String) -> gibt String an aktueller Cursor-Stelle auf Bildschirm aus
+lcdPrintC (r0 = ASCII-Zeichen) -> gibt Zeichen an aktueller Cursor-Stelle auf Bildschirm aus
+
+## Subroutinen:
+
+### Hardware initialisieren
+
+### LEDsSet
+input r0 
+			= #0 -> schaltet alle aus
+			= #1 -> schaltet nur D8 an (Rest bleibt unverändert)
+			= #2 -> schaltet nur D9 an (Rest bleibt unverändert)
+ 			= #3 -> schaltet D8, D9 an
+
+1. clr LEDs: 0000 00xx Bitmaske an GPIO_D_CLR schreiben
+2. 0000 00xx Bitmaske auf r0
+3. auf GPIO_D_SET schr. 
 
 
-
-### Taster abfragen
+### askButton - Taster abfragen 
 16-Bit-Muster an Adresse GPIO_F_PIN.
 Bit entspricht jeweils Bit entspricht jeweils einem Taster.
 Bits: 1 = Taster nicht gedrückt. 0 = Taster gedrückt. 
@@ -101,61 +108,8 @@ Unterprogramm überprüft, ob eine bestimmte Taste gedrückt wurde. Bekommt Zahl
 1. ließ Taster-Bitmuster aus
 2. Bitmaske #1 LSL um input-parameter r0
 3. betrachte nur das Bit, was dem gefragten Taster entspricht -> AND r_Taster, r_Bitmaske
-4. invertiere das gelesene Bit 
+4. invertiere das gelesene Bit (eor)
 5. schiebe das gelesene Bit nach ganz rechts
-
-
-#### AUSLESEN = readButtons:
-1. Adresse von GPIO_F_PIN laden
-2. Inhalt von GPIO_F_PIN laden
-für alle Buttons: 
-; 	r4 = #1 = 0000 0001
-; 	for(int r5 = i=0; i<8; i++) ...
-;
-; alternativ nur für S5 bis S7: 
-; 	r4 = #0x20 = 0010 0000
-; 	for (int i=5, i<8; i++)
-; 	{
-;		if (r0 == r4)
-; 			{return i, endfor}
-; 		else
-; 			{lsl r4, #1}
-;	}
-
-3. return 0 ( = kein relevanter oder mehrere gedrückt), 5, 6 oder 7 über Register
-
-
-### TFT-Display ansteuern
-bereits implementierte Methoden: 
-lcdGotoXY (r0 = X, r1 = Y) -> positioniert Cursor auf Stelle (X, Y)
-lcdPrintS (r0 = Adresse vom String) -> gibt String an aktueller Cursor-Stelle auf Bildschirm aus
-lcdPrintC (r0 = ASCII-Zeichen) -> gibt Zeichen an aktueller Cursor-Stelle auf Bildschirm aus
-
-
-### UpdateClk
-Zeitstempel auslesen: lesen der Adresse TIMER (= gibt aktuellen Wert des CNT-Registers).
-ließt den Zeitstempel aus und gibt die Zeitdifferenz zwischen jetzt und seinem vorigen Aufruf, also die Zeit die während eines Iterationsdurchlaufs der Superloop vergangen ist.
-
-1. Adresse von TIMER in Register laden
-2. Inhalt in Register laden -> Zeitstempel
-3. neuen Zeitstempel in Variable o. Register speichern
-4. aktuellen - vorigen Zeitstempel = vergangene Zeit = timeDeltaRAW (vielleicht nur über In/output, keine eigene Variable) -> return r0
-5. timeStampOLD überschreiben mit neuem Zeitstempel
-
-timeStampOLD muss bei Timerstart = 0 sein. 
-Aufruf von UpdateClk:
-- zur Initialisierung 1x
-- zum Beginn der Superloop 
-
-
-### checkTime
-ließt den Zeitgeber aus und aktualisiert die Variable, die die Zeitspanne der Stoppuhr speichert.
-
-1. UpdateClk 
-2. timeStoppedRAW = timeStoppedRAW + timeDeltaRAW (also Rückgabewert aus UpdateClk)
-
-timeStoppedRaw muss bei Timerstart = 0 gesetzt werden!
-
 
 ### convertTime 
 ohne Input / Output, sondern über Speicherzugriffe
@@ -181,8 +135,7 @@ timeStringNew = "00:00.00"0
 ### displaytime
 aktualisiert die Zeitanzeige auf dem TFT-Display
 
-1. convertTime
-2. timeStringDisplayed vgl. mit timeStringNew: 
+timeStringDisplayed vgl. mit timeStringNew: 
 mit for-Schleife String Zeichen für Zeichen vergleichen und mit printC die eine Stelle ändern, die sich verändert hat. 
 
 for (int i = 0; i < 8 ; i++)
@@ -191,47 +144,42 @@ for (int i = 0; i < 8 ; i++)
         printC
         timeStringDisplayed [i] = timeStringNew [i]
 
+### resetTimer
+setzt den Timer zurück. Wird aufgerufen, beim Übergang von Init in Run.
+
+
          
 ### FSM-Methoden:
+rufen wiederum Rubroutinen auf, um die LEDs zu schalten, Knöpfe zu überprüfen oder die Zeit auszugeben. 
+In den FSM-Methoden sind auch die Übergänge in die anderen Zustände modelliert: 
+
 
 #### INIT
-Initialisieren der Zeitvariablen:
-    -> timeStampOLD = 0
-    -> timestoppedRaw = 0
-updateLEDs (Parameter: state (hinter dem ein Bitmustersteht))
-displaytime
+1. updateLEDs (Parameter: state (hinter dem ein Bitmustersteht))
+2. übergänge in andere States checken: 
+- askButton: Taster 7 gedrückt? -> state = running 
+    -> TimerReset (einzige Stelle, wo der Timer intern tatsächlich resettet wird)
 
 #### RUNNING
-updateLEDs (state)
-displaytime
+1. converttime
+2. displaytime
+3. updateLEDs (state)
+4. Übergänge in andere States checken: 
+- askButton: Taster 5 gedrückt -> State = init
+    -> preINIT: initialen String mit 0en ausgeben, der unverändert bleibt. Vorgelagert vor init-Funktion, damit der Bildschirm nicht flackert
+- askButton: Taster 6 gedrückt -> State = Hold
+    (der zuletzt ausgegebene String mit dem aktuellen Zeitstempel bleibt unverändert auf dem Bildschirm)
 
 #### HOLD
-updateLEDs (state)
+1. updateLEDs (state)
+2. übergänge in andere States checken: 
+- askButton: Taster 5 gedrückt? -> State = init
+    -> preINIT: initialen String mit 0en ausgeben, der unverändert bleibt. Vorgelagert vor init-Funktion, damit der Bildschirm nicht flackert
+- askButton: Taster 7 gedrückt? -> state = running
 
-
-### updateState
-
-Variable state DCB:
-#0x00 = INIT
-#0x01 = RUNNING
-#0x11 = HOLD
-
-INIT, RUNNING und HOLD im Kopf als Konstanten definieren. 
-
-
-if (askButton(5)): state = INIT
-elseif (askButton(7))
-{
-    if (state == INIT): Timer resetten mit tim2_erg = 1
-    state = RUNNING
-}
-elseif (askButton(6))
-{
-    if (state == RUNNING): state = HOLD
-}
-
-
-
+### main
+1. preINIT (1x 00:00.00 ausgeben)
+2. Superloop: state-Variable auslesen, und dann per if-else die passende FSM-Methode aufrufen.
 
 ### Superloop
 superloop PROC
@@ -242,22 +190,4 @@ superloop PROC
     endp
 
 
-Rumpf: 
-1. checkTime
-2. readButtons  
-3. updateState
-4. if (State == INIT): 
-    -> timeStampOLD = 0
-    -> timestoppedRaw = 0
-5. updateLEDs (Parameter: State)
-6. if (! State == HOLD): displayTime
-
-
-
-
-# TODO nach Review am 11.06.: 
-1. LEDsAuslesen nicht nötig
-2. updateLEDs darf nicht den State auslesen. Grundstruktur im Programm: erst states ändern (als Methoden realisieren?)und je nach State entsprechende Methoden mit entsprechenden Parametern aufrufen. 
-3. alle 4 LED-Methoden vllt in eine mergen, die zwar nicht universell ist, aber für diesen Fall gut passt. 
-4. buttonsRead: Mit Bitmaske vor vgl. alle anderen Knöpfe ausblenden (z.B. nur relevante Knöpfe abfragen entsprechend der states)
 
