@@ -86,9 +86,7 @@ LEDS_ON		PROC
 ; 	
 ; input 	r0
 ; 				= 16-Bit langes Bitmuster
-; 			r1
-; 				= Schritte, um die es rotiert 
-;				  werden soll
+; 		
 ; ouput 	r0
 ;				= rotiertes Bitmuster
 ;--------------------------------------------
@@ -97,19 +95,12 @@ SHIFT_PATTERN		PROC
 
 	push {r4, r5, lr}
 
-	AND r1, #0xf							; rechnet modulo 16
+	LSRS r0, #1								; schiebe rechts 1 Bit heraus auf das Carry-Bit
 
-	ROR r0, r1								; verschieben um r1 Schritte
+	MOV r4, #0								; ließ das Carry-Bit aus
+	ADC r4, #0
 
-	ldr r5, =0xffff0000
-
-	AND r4, r0, r5							; links neu eingeschobenes Bitmuster ausschneiden
-
-	LSR r4, #16								; Ausschnitt auf Zielbitposition verschieben (immer 16 Bit weiter rechts!)
-					
-	BIC r0, r5								; links eingeschobene Bits wieder löschen mit Bitmaske 
-
-	ORR	r0, r4, r0							; Ausschnitt und verschobenes Rest-Bitmuster wieder zusammenfügen
+	ORR r0, r4, LSL #15						; füge das Carry-Bit an der 15. Bitstelle wieder ein
 
 	pop {r4, r5, pc}
 			ENDP
@@ -150,10 +141,9 @@ do_01
 
 	bl LEDS_ON
 
-	mov r0, r4
-	mov r1, #1								; inputs setzen für SHIFT_PATTERN
+	mov r0, r4								; input setzen für SHIFT_PATTERN
 	bl SHIFT_PATTERN
-	mov r4, R0								; output saven
+	mov r4, r0								; output saven
 
 	mov r0, #DelayTime
 	bl delay
