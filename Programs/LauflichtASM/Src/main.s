@@ -40,7 +40,7 @@ GPIO_E_CLR          equ (GPIOE_BASE + 0x1A)
 ; Data section, aligned on 4-byte boundery
 ;********************************************   
     AREA MyData, DATA, align = 2
-TestPattern DCW     0x9c, 0x7000, 0x5000
+TestPattern DCW     0x8000, 0x7000, 0x5000
 
 ;********************************************
 ; Code section, aligned on 8-byte boundery
@@ -99,9 +99,6 @@ SHIFT_PATTERN		PROC
 
 	AND r1, #0xf							; rechnet modulo 16
 
-	;mov r0, #0x7009
-	;mov r1, #4
-
 	ROR r0, r1								; verschieben um r1 Schritte
 
 	ldr r5, =0xffff0000
@@ -133,26 +130,42 @@ SHIFT_PATTERN		PROC
 
 
 DelayTime   EQU     500
+STARTWERT 	EQU		0
 
 Lauflicht   PROC
 	push {r4-r8, lr}
-	
+
+for_01
+	mov r6, #STARTWERT
+
+until_01
+	cmp r6, r1								; r6 = Laufvariable, r1 = Anzahl Schritte, die gegangen werden soll = Abbruchbedingung
+	bls		do_01
+	b 		enddo_01
+
+do_01
+
 	mov r4, r0								; inputs saven
 	mov r5, r1
 
 	bl LEDS_ON
 
 	mov r0, r4
-	mov r1, r5								; inputs setzen für SHIFT_PATTERN
+	mov r1, #1								; inputs setzen für SHIFT_PATTERN
 	bl SHIFT_PATTERN
 	mov r4, R0								; output saven
 
 	mov r0, #DelayTime
 	bl delay
 
-	mov r0, r4
+	mov r0, r4								; Input für nächsten Schleifendurchlauf zurückholen
 	mov r1, r5
-	bal Lauflicht
+
+step_01
+	add r6, #1							
+	b 	until_01							
+
+enddo_01							
 
 	pop {r4-r8, pc}          
             ENDP
@@ -177,14 +190,14 @@ forever
 												; in r8 steht: 0, 1 oder 2. 
 												; *2 (also LSL #1, weil: normalerweise ist ein Schritt in einer Adresse weiter = 1 Byte. 
 												; Da die Einträge von TestPattern aber 16 Bit lang sind, genau so, wie die Muster für die 16 LEDS, entspricht das 2 Byte.
-        MOV     R1, #1
+        MOV     R1, #20
         BL      Lauflicht
         
         LDR     R0, =InterTestDelay
         BL      delay
 
         ADD     R8, #1							; wenn das eine Testpattern durchlaufen wurde, laufe das nächste durch.
-        BAL     forever     ; nowhere to retun if main ends     
+        BAL     forever     					; nowhere to return if main ends     
         ENDP
     
         ALIGN
