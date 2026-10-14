@@ -15,6 +15,8 @@
     - [Submodule initieren](#submodule-initieren)
 - [Anleitung zur Verwendung von vcpkg-configuration und Aktivierung der Umgebung](#anleitung-zur-verwendung-von-vcpkg-configuration-und-aktivierung-der-Umgebung)
 - [Building](#building)
+- [Installation und Verwendung des C-Pretty-Printers](#Installation-und-Verwendung-des-C-Pretty-Printers)
+- [Installation und Verwendung des C-Linters von clang](#Installation-und-Verwendung-des-C-Linters-von-clang)
 - [Keil µVision GUI](#keil-gui)
 
 
@@ -128,23 +130,22 @@ Auf der Webseite wird automatisch die passende Version für dein Betriebssystem 
 
 Das Arm Keil Studio Pack installiert die folgenden empfohlenen Erweiterungen für die Embedded- und IoT-Softwareentwicklung auf Arm-basierten Mikrocontroller-Geräten:
 
-- Arm  - Arm CMSIS Debugger
-       - Arm CMSIS Solution: Unterstützung für die Arbeit mit CMSIS-Lösungen (csolution-Projekte)
-       - Arm Debugger
-       - Arm Device Manager: Verwalten von Geräteverbindungen für Arm Cortex-M-basierte Mikrocontroller, Entwicklungsboards und Debug-Probes
-       - Arm Embedded Debugger: Flashen und Debuggen auf Arm Cortex-M-Targets, die das Microsoft Debug Adapter Protocol (DAP) implementieren
-       - Arm Keil Studio Pack (MDK c6)
-       - Arm Remote Build: Durchführen von Remote-Builds von Projekten für Arm Cortex-M-Targets
-       - Arm Virtual Hardware: Verwalten von Arm Virtual Hardware und Ausführen von Embedded-Anwendungen darauf
-       - Arm Tools Environment Manager
-- clangd
-- CDT - CDT GDB Debug Adapter Extension
-      - Memory Inspector 
-      - Peripheral Inspector
-
-
-
-
+- Arm
+     - Arm CMSIS Debugger
+     - Arm CMSIS Solution: Unterstützung für die Arbeit mit CMSIS-Lösungen (csolution-Projekte)
+     - Arm Debugger
+     - Arm Device Manager: Verwalten von Geräteverbindungen für Arm Cortex-M-basierte Mikrocontroller, Entwicklungsboards und Debug-Probes
+     - Arm Embedded Debugger: Flashen und Debuggen auf Arm Cortex-M-Targets, die das Microsoft Debug Adapter Protocol (DAP) implementieren
+     - Arm Keil Studio Pack (MDK c6)
+     - Arm Remote Build: Durchführen von Remote-Builds von Projekten für Arm Cortex-M-Targets
+     - Arm Virtual Hardware: Verwalten von Arm Virtual Hardware und Ausführen von Embedded-Anwendungen darauf
+     - Arm Tools Environment Manager
+- clang
+- CDT
+     - CDT GDB Debug Adapter Extension
+     - Memory Inspector 
+     - Peripheral Inspector
+   
 # Anleitung zum Auschecken eines GitHub-Projekts in VS Code
 
 Folgen Sie diesen Schritten, um das GitHub-Projekt mit der URL "https://github.com/Transport-Protocol/ITS-BRD-VSC/ITS-BRD-VSC.git" in Visual Studio Code auszuchecken:
@@ -193,8 +194,8 @@ Wenn Sie in Zukunft die Submodule erneut aktualisieren möchten, führen Sie ein
 
 # Ein Projekt wählen, builden und auf das Board übertragen
 
-1. Um zu testen, ob alles richtig installiert ist, soll das Projekt "TestNewFont" genutzt werden. Dazu klicken Sie in der Aktivierungsleiste (linke Seite) auf das CMSIS Symbol. 
-2. In dem sich öffnenden CMSIS Fenster wird oben, über die "..." -> "Select active Solution from Workspace" und dann `Programs/TestNewFonts/TestNewFonts` gewählt.
+1. Um zu testen, ob alles richtig installiert ist, soll das Projekt "TestNewFont" genutzt werden. Dazu klicken Sie in der Aktivierungsleiste (linke Seite) auf das CMSIS-Symbol. 
+2. In dem sich öffnenden CMSIS-Fenster wird oben, über die "..." -> "Select active Solution from Workspace" und dann `Programs/TestNewFonts/TestNewFonts` gewählt.
 3. Anschließend über das gleiche Menue  "..." ->Refresh (reload packs, update RTE)
 4. Klicken Sie nun auf das Explorer Symbol (oben links) 
 5. Öffnen Sie das Kontextmenü (rechte Maustaste) von der Datei vcpkg-configuration.json. Wählen Sie zuerst "Update Tool registry" und anschließend "Reactivate Environment" (Das kaann eine gewisse Zeit dauern)
@@ -204,8 +205,8 @@ Sie werden aufgefordert, eine MDK Community-Lizenz für die nicht-kommerzielle N
 # Building
 
 1. Klicken Sie auf das CMSIS-Symbol
-2. Klicken Sie in dem CMSIS Menü auf den Hammer ("Build Solution") Das Projekt sollte nun ohne Fehler gebaut werden.
-3. Klicken Sie in dem CMSIS Menü auf das Pfeil (Load & Run) um das Projekt auf das Board zu übertragen und dort laufen zu lassen, oder auf den Käfer (Load & Debug) , um das Projekt auf das Board zu übertragen und dort das Programm im Einzelschritt Modus laufen zu lassen. 
+2. Klicken Sie in dem CMSIS-Menü auf den Hammer ("Build Solution") Das Projekt sollte nun ohne Fehler gebaut werden.
+3. Klicken Sie in dem CMSIS-Menü auf das Pfeil (Load & Run) um das Projekt auf das Board zu übertragen und dort laufen zu lassen, oder auf den Käfer (Load & Debug) , um das Projekt auf das Board zu übertragen und dort das Programm im Einzelschritt Modus laufen zu lassen. 
 
 # Neues Projekt erstellen
 
@@ -218,7 +219,7 @@ Sie werden aufgefordert ein Projekt Name einzugeben. Der Name muss mit einem Gro
 Nun wird ein neues Projekt erstellt.
 
 4. Klicken Sie auf CMSIS 
-5. In dem sich öffnenden CMSIS Fenster wird oben, über die "..." -> "Select active Solution from Workspace" und dann `Programs/<Name des Projekt>/<Name des Projekt>` gewählt.
+5. In dem sich öffnenden CMSIS-Fenster wird oben, über die "..." -> "Select active Solution from Workspace" und dann `Programs/<Name des Projekt>/<Name des Projekt>` gewählt.
 6. Anschließend über das gleiche Menue  "..." ->Refresh (reload packs, update RTE)
 7. Klicken Sie nun auf das Explorer Symbol (oben links) 
 8. Öffnen Sie das Kontextmenü (rechte Maustaste) von der Datei vcpkg-configuration.json. Wählen Sie zuerst "Update Tool registry" und anschließend "Reactivate Environment" 
@@ -229,10 +230,153 @@ Nun wird ein neues Projekt erstellt.
 
 1. Klicken Sie nun auf das Explorer Symbol (oben links) 
 2. Mit Hilfe der rechten Maustaste auf dem Ordner Src kann ein neues C-File erstellt wreden.
-3. Mit Hilfe der rechten Maustaste auf dem Ordner Inc kann ein neues h-File erstellt wreden.
+3. Mit Hilfe der rechten Maustaste auf dem Ordner Inc kann ein neues h-File erstellt werden.
 4. Öffnen Sie die Datei <Projekt Name>.cproject.yml
-5. Ganz unten in der Datei, in der group Program/User/Src muss das neue File mit hilfe von - file: <file name> hinzu gefügt werden.
+5. Ganz unten in der Datei, in der group Program/User/Src muss das neue File mit Hilfe von - file: <file name> hinzu gefügt werden.
 
+# Installation und Verwendung des C-Petty-Printers
+Der Pretty-Printer basiert auf dem clang Pretty-Printer clang-format. In dieser VSCode Konfiguration wird der Language Server clangd eingesetzt. Ein Language Server unterstützt typische Editor Funktionen wie Code-Vervollständigung, das Finden von Definitionen und Echtzeit-Fehleranalysen. In clangd ist auch der Pretty-Printer clang-format integriert. Aus Performance-Gründen ist clang-format direkt in clangd integriert - clangd verwendet entsprechende Bibliotheken von clang-format.
+
+## Konfiguration des clang Pretty-Printers 
+Die Datei “.clang-format“ im Wurzelverzeichnis des VSCode Projekts legt die Formatierung fest. Passen Sie diese bei ggf. an Ihre Bedürfnisse an.
+
+## Aufruf des Pretty-Printers für eine Datei im Text-Editor
+Bearbeiten Sie eine C-Datei im Text-Editor, wird der Pretty-Printer für diese Datei über ein Keybinding aufgerufen.
+### Windows
+ “Alt+Shift+F“
+### Linux (Ubuntu)
+“Ctrl+Shift+I“ 
+### MAC
+“Opt+Shift+F“ 
+
+
+## Aufruf des Pretty-Printers für alle Dateien des CMSIS-Projekts
+ Das Python Script bin/format_all.py ruft den Pretty-Printer für alle *.c und *.h Dateien des aktuellen CMSIS-Projekts auf. Da in diesem Fall der eigenständige Pretty-Printer clang-format Eingesetz wird, muss sowohl dieser wie auch Python3 installiert werden.
+ 
+
+### Installation von Python
+Überprüfen Sie, ob eine python3 Version auf Ihrem System installiert ist. Rufen Sie dazu in einer Shell den Befehl 
+- python3 --version 
+
+auf. Erscheinen keine Versionsinformationen muss python3 auf Ihrem System wie folgt installiert werden.
+#### MAC
+Führen Sie in der bash Shell folgenden Befehl aus:
+- brew install python3
+#### Linux
+Führen Sie in der bash Shell folgende Befehle aus:
+- sudo apt update
+- sudo apt install python3
+#### Windows
+- Öffnen Sie ein Terminal im Admin Modus über einen Rechtsklick auf dem Windows Symbol in der Task-Leiste.
+- Durch Eingabe des Befehls python3 gelangen Sie in den Microsoft-Store zur Installation von python. Führen Sie das Installationsskript aus, indem Sie nach den get-Button den open-Button drücken.
+
+### Installation der clang Pretty-Printers 
+Überprüfen Sie, ob der clang Pretty-Printer installiert ist. Rufen Sie dazu in einer Shell den Befehl 
+- clang-format --version 
+
+auf. Erscheinen keine Versionsinformationen muss clang-format auf Ihrem System wie folgt installiert werden.
+#### MAC
+Führen Sie in der bash Shell folgenden Befehl aus:
+- brew install clang-format
+#### Linux
+Führen Sie in der bash Shell folgende Befehle aus:
+- sudo apt update
+- sudo apt install clang-format
+#### Windows
+Hier ist clang-format schon im Rahmen der Installation von llvm installiert.
+
+
+### Ausführung des Pretty-Printers
+Sie können die Pretty-Printer auf drei Arten ausführen.
+1. Im Terminal wird folgender Befehl ausgeführt:
+   - python3 <Pfad zum VScode Projekt\>/bin/format_all.py <Pfad zum aktuellen CMSIS-Projekt\>
+2. Die VSCode Task “C-Pretty-Printer“ wird ausgeführt.
+   - Starten Sie über “Ctrl+Shift+P“ (bzw. “Cmd+Shift+P“ auf einem MAC System) die Ausführung eines Programms.
+   - Wählen und starten Sie das Programm “Tasks: Run Task“
+   - Wählen Sie die Ausführung der Task “C-Pretty-Printer“
+3. Der C-Pretty-Printer wird über ein Keybinding ausgeführt.
+	 - Einmalig wird die VSCode Task “C-Pretty-Printer“ an eine entsprechende Tastenkombination gebunden. Die Keybindings sind benutzerspezifisch und stehen somit in der benutzerspezifischen Datei keybindings.json. Auf einen MAC System liegt diese Datei im Verzeichnis /Users/<DeinBenutzername>/Library/Application Support/Code/User/.
+	 - Keybindings werden wie folgt eingefügt. Starten Sie über “Ctrl+Shift+P“ (bzw. “Cmd+Shift+P“ auf einem MAC System) die Ausführung eines Programms. Wählen Sie “Open Keyboard Shortcuts (JSON)“ aus. In die sich öffnende JSON Datei fügen Sie folgendes Keybinding ein:
+   
+   ```
+   [
+	    {   "key": "shift+alt+p",
+	        "command": "workbench.action.tasks.runTask",
+	        "args": "C-Pretty-Printer"
+	    }
+    ]
+    ```
+   - Nun kann über “Alt+Shift+P“ (bzw. “Opt+Shift+P“ auf einem MAC System) der C-Pretty-Printer für das aktuelle CMSIS-Projekt ausgeführt werden.
+
+# Installation und Verwendung des C-Linters von clang
+Der C-Coding-Style-Checker basiert auf clang-tidy, dem C-Linter von clang. \
+In dieser VSCode Konfiguration wird der Language Server clangd eingesetzt. clangd unterstützt auch die Warnung des C-Linters clang-tidy. Aus Performance-Gründen ist clang-tidy direkt in clangd integriert - clangd verwendet entsprechende Bibliotheken von clang-tidy.
+
+## Konfiguration des Linters clang-tidy
+clang-tidy wird über die Datei .clang-tidy, die in obersten Verzeichnis von diesem Repo liegt, konfiguriert. Bei Bedarf können Sie .clang-tidy sinnvoll anpassen, zum Beispiel bei den Konventionen für Bezeichner. Wobei das Ausschalten von clang-tidy Checks nur in Ausnahmefällen sinnvoll ist. 
+
+## Ausgabe der Warnungen von clang-tidy
+Für die im Texteditor geöffneten Dateien gibt die clang-tidy Version, die in clangd integriert ist, die Warnungen im Problem Window aus. 
+
+## Nutzung einer eigenständigen clang-tidy Version
+Unabhängig von der in clangd integrierten clang-tidy Version können Sie eine eigenständige Instanz in clang-tidy verwenden. Da die eigenständige clang-tidy Version nicht mit clangd gekoppelt ist, erscheinen ihre Ausgaben nicht im Problem-Window. \
+Das Script lint_all.py überprüft alle Src/*.c und Inc/*.h Dateien des aktuellen CMSIS-Projekts und speichert die Warnungen in der Datei lang_tidy_result.txt ab, die im obersten Verzeichnis des aktuellen CMSIS-Projekts liegt. Diese Datei können Sie über den VSCode Explorer finden - im CMSIS-View werden “*.txt“ Dateien in der Regel nicht angezeigt.\
+Die Verwendung der externen Version von clang-tidy ist hilfreich, wenn sie alle *.c und *.h Dateien des aktuellen CMSIS-Projekts mit einem Klick überprüfen wollen - eine typische Aktivität in der Endphase eines Entwicklungsschritts.\
+Bitte beachten Sie, dass sich die in clangd integrierte Version von clang-tidy und die externe Version von clang-tidy an wenigen Stellen unterscheiden, was manchmal zu unterschiedlichen Warnungen führt.
+### Installation von python3
+Da die externe clang-tidy Version über ein Python Skript aufgerufen wird, muss zuerst Python3 installiert werden. Das vorherige Kapitel geht auf die Installation von python3 ein. 
+#### Installation des Moduls pyyaml
+Weiterhin muss das das Python Modul pyyaml installiert werden.
+##### MAC
+Führen Sie in der bash Shell folgenden Befehl aus:
+- pip3 install pyyaml
+##### Linux
+Führen Sie in der bash Shell folgenden Befehl aus:
+- sudo apt update
+- sudo apt install python3-yaml
+##### Windows
+Führen Sie in der Powershell folgenden Befehl aus:
+- pip install pyyaml
+
+### Installation von clang-tidy
+Überprüfen Sie, ob clang-tidy schon installiert ist. Rufen Sie dazu in einer Shell den Befehl 
+- clang-tidy --version 
+
+auf. Erscheinen keine Versionsinformationen muss clang-tidy auf Ihrem System wie folgt installiert werden.
+#### MAC
+Führen Sie in der Shell folgenden Befehl aus:
+- brew install llvm
+#### Linux
+Führen Sie in der bash Shell folgende Befehle aus:
+- sudo apt update
+- sudo apt install clang-tidy
+#### Windows
+Hier ist clang-tidy normalerweise im Rahmen der Installation von llvm installiert. Dies können Sie in der Powershell über den Aufruf clang-tidy --version überprüfen.
+
+- Falls clang-tidy nicht installiert ist, laden Sie die aktuelle llvm Version von der Seite https://github.com/llvm/llvm-project/releases.
+- Führen Sie das heruntergeladene Installation-Skript aus. Achten Sie darauf, dass die Option „LLVM zum PATH aller User hinzufügen“ ausgewählt wird.
+
+### Ausführung des externen clang-tidy Version
+Sie können die externe clang-tidy Version auf drei Arten ausführen.
+1. Im Terminal wird folgender Befehl ausgeführt:
+   - python3 <Pfad zum VScode Projekt\>/bin/lint_all.py <Pfad zum *.csolution.yml des aktuellen CMSIS-Projekt\>
+2. Die VSCode Task “C-Linter“ wird ausgeführt.
+   - Starten Sie über “Ctrl+Shift+P“ (bzw. “Cmd+Shift+P“ auf einem MAC System) die Ausführung eines Programms.
+   - Wählen und starten Sie das Programm “Tasks: Run Task“
+   - Wählen Sie die Ausführung der Task “C-Linter“
+3. Der C-Linter wird über ein Keybinding ausgeführt.
+	 - Einmalig wird die VSCode Task “C-Linter“ an eine entsprechende Tastenkombination gebunden. Die Keybindings sind benutzerspezifisch und stehen somit in der benutzerspezifischen Datei keybindings.json. Auf einen MAC System liegt diese Datei im Verzeichnis /Users/<DeinBenutzername>/Library/Application Support/Code/User/.
+	 - Keybindings werden wie folgt eingefügt. Starten Sie über “Ctrl+Shift+P“ (bzw. “Cmd+Shift+P“ auf einem MAC System) die Ausführung eines Programms. Wählen Sie “Open Keyboard Shortcuts (JSON)“ aus. In die sich öffnende JSON Datei fügen Sie folgendes Keybinding ein:
+   
+   ```
+   [
+	    {   "key": "shift+alt+l",
+	        "command": "workbench.action.tasks.runTask",
+	        "args": "C-Linter"
+	    }
+    ]
+    ```
+   - Nun kann über “Alt+Shift+L“ (bzw. “Opt+Shift+L“ auf einem MAC System) der C-Linter für das aktuelle CMSIS-Projekt ausgeführt werden.
 
 
 # Keil GUI
