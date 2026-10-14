@@ -117,7 +117,7 @@
   "cmake.ignoreCMakeListsMissing": true,
   "C_Cpp_Runner.msvcBatchPath": "",
   "clangd.arguments": [
-    "--compile-commands-dir=/Users/franz/GIT_HUB/ITS-BRD-VSC/Programs/Karl/out/Karl/ITSboard/Debug"
+    "--compile-commands-dir=c:\\Users\\Sammi\\Documents\\UNI-Lehrmaterial\\GT\\GTsose26\\git-Projekte\\ITS-BRD-VSC\\Programs\\Taschenrechners\\out\\Taschenrechners\\ITSboard\\Debug"
   ],
   "debug.hideSlowPreLaunchWarning": true,
   "debug.showInStatusBar": "never",
@@ -125,5 +125,9 @@
     "*.s": "arm-debugger.arm",
     "*.c": "c",
     "*.h": "c"
-  }
+  },
+  "memory-inspector.addressPadding": "32bit",
+  "memory-inspector.groupings.groupsPerRow": "Autofit",
+  "memory-inspector.groupings.MAUsPerGroup": 4,
+  "memory-inspector.scrollingBehavior": "Auto-Append"
 }
