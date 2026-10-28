@@ -1,4 +1,5 @@
 #include "stack.h"
+#include "main.c" //Konstante auslagern?
 
 int peek(int stack[], int top){
     return stack[top];
@@ -7,7 +8,7 @@ int peek(int stack[], int top){
 int push(int stack[], int *top, int input){
     
     if(*top >= STACK_SIZE - 1){
-        return -1 //overflow 
+        return -1; //overflow 
     }
     
     (*top)++;
@@ -19,7 +20,7 @@ int push(int stack[], int *top, int input){
 int pop(int *top){
     
     if(*top <= 0){
-        return -1 //Underflow
+        return -1; //Underflow
     }
 
     (*top)--;

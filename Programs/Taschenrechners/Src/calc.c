@@ -1,4 +1,5 @@
 #include "calc.h"
+#include "stack.h"
 
 int stack_add(int stack[], int *top){
     int a, b;

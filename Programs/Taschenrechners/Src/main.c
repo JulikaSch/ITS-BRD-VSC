@@ -39,18 +39,43 @@ int main(void) {
    */
    int stack[STACK_SIZE];
    int top = -1;
-   int output;
+   int a; //guter Name finden
 
    while(1){ //unsicher!, unfertig!
-      T_token token = next_token() 
+      T_token token = next_token();
       switch (token.tok){
       case NUMBER:
-         output=push(stack, &top, token.val) //richtig?
+         a = push(stack, &top, token.val); //richtig?
          break;
       case PLUS:
-         output=stack_add(stack, &top)
+         a = stack_add(stack, &top);
          break;
-         //usw
+      case MINUS:
+         a = stack_sub(stack, &top);
+         break;
+      case MULT:
+         a = stack_mul(stack, &top);
+         break;
+      case DIV:
+         a = stack_div(stack, &top);
+      case PRT:
+         a = print_head(stack, top);
+         break;
+      case PRT_ALL:
+         a = print_3head(stack, top);
+         break;
+      case DOUBLE:
+         a = dub_head(stack, &top);
+         break;
+      case SWAP:
+         a = swap_2head(stack, top);
+         break;
+      case CLEAR:
+         clear(&top);
+         break;
+      case OVERFLOW:
+         print_stdout("Stack Overflow");
+      break;
       }
    }
 
