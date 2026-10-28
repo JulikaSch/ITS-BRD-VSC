@@ -1,0 +1,41 @@
+Reverse Polish Notation:
+    1 2 + -> 1+2 = 3
+    1 2 + 2 * -> (1+2) * 2 = 6
+
+Eingabe:
+    /ITS_BRD_LIB/Src/keypad.c = Tastatur, fertig
+    scanner.c/h auch gestellt
+        Wandelt input in Token um
+        siehe token.h 
+
+Ausgabe:
+    display.c/h gestellt
+
+stack:
+    int peek(), gibt oberstes ele aus
+    int push()
+    int pop()
+    Enthällt nur Funktionen. Der Stack selber ist bestimmt im main
+    top hinten im Array, eigene var
+
+calculate: 
+    + nimmt zwei Werte vom Stack und legt deren Summe wieder auf dem Stack ab
+    - nimmt zwei Werte vom Stack, subtrahiert vom zweiten Wert den ersten (oberen) Wert und legt das Ergebnis wieder auf dem Stack ab.
+    * nimmt zwei Werte vom Stack und legt deren Produkt wieder auf dem Stack ab.
+    /,  nimmt zwei Werte vom Stack, teilt den zweiten Wert durch den ersten (ganz-zahlige Division) und legt das Ergebnis wieder auf dem Stack ab.
+     
+operations:
+    p druckt den obersten Wert des Stacks aus, ohne dass der Stack verändert wird.
+    P druckt die drei obersten Werte des Stacks aus.
+    C löscht alle Einträge des Stacks.
+    d dupliziert den obersten Eintrag des Stacks.
+    r vertauscht die Reihenfolge der beiden obersten Einträge des Stacks.
+
+?? Sollen zwei Zahlen hintereinander auf den Stack geschrieben werden, werden diese durch die
+Eingabe der Enter Taste (Taste ist nicht beschriftet) getrennt. ??
+
+to string:?
+
+main()
+sind alle Dateien Included?
+errorhandling!

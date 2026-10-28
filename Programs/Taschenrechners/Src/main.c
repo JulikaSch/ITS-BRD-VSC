@@ -13,6 +13,15 @@
 #include "lcd.h"
 #include "stm32f4xx_hal.h"
 
+#include "calc.h"
+#include "display.h"
+#include "operate.h"
+#include "scanner.h"
+#include "stack.h"
+#include "token.h"
+
+#define STACK_SIZE 5 //Willkührlich gewählt
+
 int main(void) {
    initITSboard(); // Initialisierung des ITS Boards
 
@@ -23,10 +32,28 @@ int main(void) {
    lcdPrintlnS("Hallo liebes TI-Labor (c-project)");
 
    // Test in Endlosschleife
-   const int POLL_DELAY = 10000;
+  /* const int POLL_DELAY = 10000;
    while (1) {
       HAL_Delay(POLL_DELAY);
    }
+   */
+   int stack[STACK_SIZE];
+   int top = -1;
+   int output;
+
+   while(1){ //unsicher!, unfertig!
+      T_token token = next_token() 
+      switch (token.tok){
+      case NUMBER:
+         output=push(stack, &top, token.val) //richtig?
+         break;
+      case PLUS:
+         output=stack_add(stack, &top)
+         break;
+         //usw
+      }
+   }
+
 }
 
 // EOF
