@@ -30,10 +30,9 @@
             "options": {
                 "cwd": "${workspaceFolder}/Programs/Taschenrechners",
                 "shell": {
-                    "executable": "cmd.exe",
+                    "executable": "/bin/bash",
                     "args": [
-                        "/d",
-                        "/c"
+                        "-c"
                     ]
                 }
             },
@@ -54,10 +53,9 @@
             "options": {
                 "cwd": "${workspaceFolder}/Programs/Taschenrechners",
                 "shell": {
-                    "executable": "cmd.exe",
+                    "executable": "/bin/bash",
                     "args": [
-                        "/d",
-                        "/c"
+                        "-c"
                     ]
                 }
             },
@@ -77,10 +75,9 @@
             "options": {
                 "cwd": "${workspaceFolder}/Programs/Taschenrechners",
                 "shell": {
-                    "executable": "cmd.exe",
+                    "executable": "/bin/bash",
                     "args": [
-                        "/d",
-                        "/c"
+                        "-c"
                     ]
                 }
             },
@@ -114,10 +111,9 @@
             "options": {
                 "cwd": "${workspaceFolder}/Programs/Taschenrechners",
                 "shell": {
-                    "executable": "cmd.exe",
+                    "executable": "/bin/bash",
                     "args": [
-                        "/d",
-                        "/c"
+                        "-c"
                     ]
                 }
             },

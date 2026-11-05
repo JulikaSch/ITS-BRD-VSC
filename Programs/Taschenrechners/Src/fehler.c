@@ -1,5 +1,3 @@
-#include <errno.h>
-
 #include "fehler.h"
 #include "display.h"
 
@@ -22,7 +20,7 @@ void show_error(int error) {
       print_stdout("Bereichsueberschreitung");
       break;
    case ERR_INPUT_RANGE:
-      print_stdout("Eingabe zu groß");
+      print_stdout("Eingabe zu gross");
       break;
    default:
       print_stdout("Unbekannter Fehler");

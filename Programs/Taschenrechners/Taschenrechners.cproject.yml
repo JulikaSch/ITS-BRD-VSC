@@ -180,6 +180,12 @@ project:
     - group: Program/User/Src
       files:
         - file: Src/main.c
+        - file: Src/stack.c
+        - file: Src/calc.c
+        - file: Src/operate.c
+        - file: Src/fehler.c
+        - file: Src/scanner.c
+        - file: Src/display.c
 
 
   components:

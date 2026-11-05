@@ -1,6 +1,12 @@
 #ifndef CALC_H
 #define CALC_H
 
+//liest die obersten beiden Values auf Stack aus
+int get_operands(const int stack[], int top, int *a, int *b);
+
+//nimmt die oberste 2 Stack Werte und pusht ein neues, hier für operationen zb a+b
+int get_operands(const int stack[], int top, int *a, int *b);
+
 //nimmt zwei Werte vom Stack und legt deren Summe wieder auf dem Stack ab
 int stack_add(int stack[], int *top);
 
