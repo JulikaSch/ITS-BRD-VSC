@@ -13,3 +13,6 @@
 [submodule "lwip"]
 	path = lwip
 	url = https://github.com/lwip-tcpip/lwip.git
+[submodule "ITS_BRD_sensorik"]
+	path = ITS_BRD_sensorik
+	url = https://github.com/ITS-BRD/ITS_BRD_sensorik.git
