@@ -19,8 +19,8 @@
 #include "scanner.h"
 #include "stack.h"
 #include "token.h"
+#include "fehler.h"
 
-#define STACK_SIZE 5 //Willkührlich gewählt
 
 int main(void) {
    initITSboard(); // Initialisierung des ITS Boards
@@ -39,44 +39,58 @@ int main(void) {
    */
    int stack[STACK_SIZE];
    int top = -1;
-   int a; //guter Name finden
+   int error = ERR_OK;
 
+   
    while(1){ //unsicher!, unfertig!
       T_token token = next_token();
+
+      if (error != ERR_OK) {  //Fehler!
+         if (token.tok == CLEAR) { //checken ob c gedrückt wurde
+            clear(&top);
+            set_normal_mode(); 
+            error = ERR_OK;
+         }
+         continue;
+      }
+
       switch (token.tok){
       case NUMBER:
-         a = push(stack, &top, token.val); //richtig?
+         error = push(stack, &top, token.val); //richtig?
          break;
       case PLUS:
-         a = stack_add(stack, &top);
+         error = stack_add(stack, &top);
          break;
       case MINUS:
-         a = stack_sub(stack, &top);
+         error = stack_sub(stack, &top);
          break;
       case MULT:
-         a = stack_mul(stack, &top);
+         error = stack_mul(stack, &top);
          break;
       case DIV:
-         a = stack_div(stack, &top);
+         error = stack_div(stack, &top);
+         break;
       case PRT:
-         a = print_head(stack, top);
+         error = print_head(stack, top);
          break;
       case PRT_ALL:
-         a = print_3head(stack, top);
+         error = print_3head(stack, top);
          break;
       case DOUBLE:
-         a = dub_head(stack, &top);
+         error = dub_head(stack, &top);
          break;
       case SWAP:
-         a = swap_2head(stack, top);
+         error = swap_2head(stack, top);
          break;
       case CLEAR:
          clear(&top);
          break;
       case OVERFLOW:
-         print_stdout("Stack Overflow");
-      break;
+         error = ERR_INPUT_RANGE;
+         break;
       }
+
+      show_error(error);
    }
 
 }

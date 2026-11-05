@@ -1,46 +1,58 @@
 #include "operate.h"
-#include "stack.h"
 #include "display.h"
-#include "stdio.h"
-
+#include "fehler.h"
+#include "stack.h"
+#include <stdio.h>
 
 int print_head(int stack[], int top){ //=p
-    int a;
+    int val;
     char str[10];
-    a=peek(stack, top);
-    sprintf(str, "%d\n", a);
+    int error = peek(stack, top, 0, &val);
+    sprintf(str, "%d\n", val);
     print_stdout(str);
     return 0;
 }
 
 int print_3head(int stack[], int top){ //P vllt falsch
-    int i, a;
+    int val[3];
     char str[10];
-    for(i=0; i<3; i++){
-        a=peek(stack, (top-i));
-        printf("%d\n",a);
-        sprintf(str, "%d\n", a);
+    for(int i=0; i<3; i++){
+        //a=peek(stack, (top-i));
+        int error = peek(stack, top, i, &val[i]);
+        if (error != ERR_OK) {
+         return error; 
+        }
+    for (int i = 2; i >= 0; i--) {
+        sprintf(str, "%d\n", val[i]);
         print_stdout(str);
-    }
-    return 0;
-}
+   }
+   return ERR_OK;
 
-int clear(int *top){ 
-    *top = -1;
-    return 0;
-}
 
 int dub_head(int stack[], int *top){ //d
-    int a;
-    a = stack[*top];
-    push(stack, top, a);
-    return 0;
+    int val;
+    int error = peek(stack, *top, 0, &val);
+    if (error != ERR_OK) {
+        return error;
+    }
+
+    push(stack, top, val);
+    return ERR_OK;
 }
 
-int swap_2head(int stack[], int top){   //r
-    int a;
-    a = stack[top];
-    stack[top] = stack[top-1];
-    stack[top-1] = a; 
-    return 0;
-} 
+
+
+int swap_2head(int stack[], int top) {
+   int a, b;
+   int error = peek(stack, top, 0, &a);
+   if (error != ERR_OK) {
+      return error;
+   }
+   error = peek(stack, top, 1, &b);
+   if (error != ERR_OK) {
+      return error;
+   }
+   stack[top] = b;
+   stack[top - 1] = a;
+   return ERR_OK;
+}

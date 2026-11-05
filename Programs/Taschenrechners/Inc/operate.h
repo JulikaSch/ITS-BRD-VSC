@@ -7,8 +7,6 @@ int print_head(int stack[], int top);
 //P, druckt die drei obersten Werte des Stacks aus
 int print_3head(int stack[], int top);
 
-//C, löscht alle Einträge des Stacks
-int clear(int *top);
 
 //d, dupliziert den obersten Eintrag des Stacks.
 int dub_head(int stack[], int *top);

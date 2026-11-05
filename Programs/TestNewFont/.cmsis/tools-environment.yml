@@ -4,18 +4,18 @@ cmsis-tools-environment:
   solution: ../TestNewFont.csolution.yml
   environment:
     path:
-      - c:/Users/Jakob/.vscode/extensions/arm.vscode-cmsis-debugger-1.10.0-win32-x64/tools/pyocd
+      - c:/Users/Jakob/.vscode/extensions/arm.vscode-cmsis-debugger-1.10.1-win32-x64/tools/pyocd
       - c:/Users/Jakob/.vscode/extensions/arm.cmsis-csolution-1.72.0-win32-x64/tools/cmsis-toolbox/bin
-      - c:/Users/Jakob/.vscode/extensions/arm.vscode-cmsis-debugger-1.10.0-win32-x64/tools/gdb/bin
+      - c:/Users/Jakob/.vscode/extensions/arm.vscode-cmsis-debugger-1.10.1-win32-x64/tools/gdb/bin
     variables: {}
   tools:
     - name: pyOCD
-      version: 0.46.0
+      version: v0.46.1
       origin: built-in
       provider:
         type: vscode-extension
         id: arm.vscode-cmsis-debugger
-      directory: c:/Users/Jakob/.vscode/extensions/arm.vscode-cmsis-debugger-1.10.0-win32-x64/tools/pyocd
+      directory: c:/Users/Jakob/.vscode/extensions/arm.vscode-cmsis-debugger-1.10.1-win32-x64/tools/pyocd
       manual: https://pyocd.io/docs/
     - name: CMSIS-Toolbox
       version: 2.15.0
@@ -31,5 +31,5 @@ cmsis-tools-environment:
       provider:
         type: vscode-extension
         id: arm.vscode-cmsis-debugger
-      directory: c:/Users/Jakob/.vscode/extensions/arm.vscode-cmsis-debugger-1.10.0-win32-x64/tools/gdb/bin
+      directory: c:/Users/Jakob/.vscode/extensions/arm.vscode-cmsis-debugger-1.10.1-win32-x64/tools/gdb/bin
       manual: https://developer.arm.com/Tools%20and%20Software/GNU%20Toolchain
