@@ -1,6 +1,8 @@
 #ifndef FEHLER_H
 #define FEHLER_H
 
+//Definiert Fehlercodes Konstanten
+
 #define ERR_OK 0              
 #define ERR_STACK_OVERFLOW 1  
 #define ERR_STACK_UNDERFLOW 2 

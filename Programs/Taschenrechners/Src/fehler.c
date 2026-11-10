@@ -1,6 +1,8 @@
 #include "fehler.h"
 #include "display.h"
 
+//Definiert Fehlercode Konstanten
+
 void show_error(int error) {
    if (error == ERR_OK) {
       return;

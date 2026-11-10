@@ -30,15 +30,15 @@ int main(void) {
       HAL_Delay(POLL_DELAY);
    }
    */
-   int stack[STACK_SIZE];
-   int top = -1;
+   int stack[STACK_SIZE];  //Stack als Array,
+   int top = -1;           
    int error = ERR_OK;
 
    
-   while(1){ 
+   while(1){            //Dauerschleife, Token auslesen-> auswerten -> nächster
       T_token token = next_token();
 
-      if (error != ERR_OK) {  //Fehler!
+      if (error != ERR_OK) {  //Fehler! <-? noch Aktuell?
          if (token.tok == CLEAR) { //checken ob c gedrückt wurde
             clear(&top);
             set_normal_mode(); 

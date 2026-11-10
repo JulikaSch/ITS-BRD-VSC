@@ -4,6 +4,7 @@
 #include "stack.h"
 #include <stdio.h>
 
+//p, druckt den obersten Wert des Stacks aus
 int print_head(int stack[], int top){ //=p
     int val;
     char str[16];
@@ -16,6 +17,7 @@ int print_head(int stack[], int top){ //=p
     return error;
 }
 
+//P, druckt die drei obersten Werte des Stacks aus
 int print_3head(int stack[], int top){ //P vllt falsch
     int val[3];
     char str[16];
@@ -34,6 +36,7 @@ int print_3head(int stack[], int top){ //P vllt falsch
 
 }
 
+//d, dupliziert den obersten Eintrag des Stacks.
 int dub_head(int stack[], int *top){ //d
     int val;
     int error = peek(stack, *top, 0, &val);
@@ -45,7 +48,7 @@ int dub_head(int stack[], int *top){ //d
     return error;
 }
 
-
+//r, vertauscht die Reihenfolge der beiden obersten Einträge des Stacks.
 int swap_2head(int stack[], int top) {
    int a, b;
    int error = peek(stack, top, 0, &a);
