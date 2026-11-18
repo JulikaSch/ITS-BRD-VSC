@@ -2,8 +2,11 @@
     "targetSet": {
         "Programs/Taschenrechners/Taschenrechners": {
             "activeTargetType": "ITSboard"
+        },
+        "Programs/Drehgeber/Drehgeber": {
+            "activeTargetType": "ITSboard"
         }
     },
-    "activeSolution": "../Programs/Taschenrechners/Taschenrechners.csolution.yml",
+    "activeSolution": "../Programs/Drehgeber/Drehgeber.csolution.yml",
     "activeTarget": "ITSboard"
 }

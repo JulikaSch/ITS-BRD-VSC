@@ -28,11 +28,12 @@
             "type": "shell",
             "command": "pyocd",
             "options": {
-                "cwd": "${workspaceFolder}/Programs/Taschenrechners",
+                "cwd": "${workspaceFolder}/Programs/Drehgeber",
                 "shell": {
-                    "executable": "/bin/bash",
+                    "executable": "cmd.exe",
                     "args": [
-                        "-c"
+                        "/d",
+                        "/c"
                     ]
                 }
             },
@@ -51,11 +52,12 @@
             "type": "shell",
             "command": "pyocd",
             "options": {
-                "cwd": "${workspaceFolder}/Programs/Taschenrechners",
+                "cwd": "${workspaceFolder}/Programs/Drehgeber",
                 "shell": {
-                    "executable": "/bin/bash",
+                    "executable": "cmd.exe",
                     "args": [
-                        "-c"
+                        "/d",
+                        "/c"
                     ]
                 }
             },
@@ -73,11 +75,12 @@
             "type": "shell",
             "command": "pyocd",
             "options": {
-                "cwd": "${workspaceFolder}/Programs/Taschenrechners",
+                "cwd": "${workspaceFolder}/Programs/Drehgeber",
                 "shell": {
-                    "executable": "/bin/bash",
+                    "executable": "cmd.exe",
                     "args": [
-                        "-c"
+                        "/d",
+                        "/c"
                     ]
                 }
             },
@@ -109,11 +112,12 @@
             "type": "shell",
             "command": "pyocd",
             "options": {
-                "cwd": "${workspaceFolder}/Programs/Taschenrechners",
+                "cwd": "${workspaceFolder}/Programs/Drehgeber",
                 "shell": {
-                    "executable": "/bin/bash",
+                    "executable": "cmd.exe",
                     "args": [
-                        "-c"
+                        "/d",
+                        "/c"
                     ]
                 }
             },
