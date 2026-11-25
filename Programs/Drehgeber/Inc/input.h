@@ -7,7 +7,7 @@
 #include "types.h"
 
 
-
-PhaseId inputReadPhase();
+//Liest Port F A,B,S6 Einmal ein und gibt Phase und Zustand von S6 zurück
+InputData inputRead(void);
 
 #endif

@@ -1,9 +1,7 @@
 //encoder.c
 
 #include "encoder.h"
-#include "types.h"
-#include <stdbool.h>
-#include <stdint.h>
+
 
 
 //Zustand des Drehgebers
@@ -11,7 +9,7 @@
 
 static PhaseId altePhase = PHASE_A;
 static int32_t count = 0;
-static Direction richtung = DIR_UNKOWN;
+static Direction richtung = DIR_UNKNOWN;
 static bool error = false ;
 
 
@@ -19,9 +17,9 @@ static bool error = false ;
 void encoderInit(PhaseId startPhase){
     altePhase = startPhase;
     count = 0;
-    richtung = DIR_UNKOWN;
+    richtung = DIR_UNKNOWN;
     error = false;
-};
+}
 
 //pro Superloop mit eingelesener Phase aufrufen
 void encoderUpdate(PhaseId phase){
