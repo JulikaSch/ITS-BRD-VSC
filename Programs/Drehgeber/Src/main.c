@@ -11,6 +11,7 @@
 #include "init.h"
 #include "lcd.h"
 #include "stm32f4xx_hal.h"
+#include <stdint.h>
 #include <stdio.h>
 
 #include "input.h"
@@ -18,6 +19,19 @@
 #include "types.h"
 #include "encoder.h"
 #include "calc.h"
+#include "measure.h"
+
+//Was Messpin PE0 anzeigt
+//1 high wärend Display ausgabe. Impulsbreite = Displayausgabe
+//2 wechselt in jedem Durchlauf. Abstand der Flanken = dauer Superloop
+#define MESSPIN_MODUS 1
+
+//Messung mit timer zusätzlich zu Display anzeigen
+//1 an, für ohne Oszilloskop
+//0 aus, fürs Lab
+#define ZEIT_ANZEIGEN 1
+
+#define TICKS_PRO_US (TICKS_PRO_SEKUNDE / 1000000ULL) //Timerticks in ms = 90
 
 int main(void) {
   initITSboard(); // Initialisierung des ITS Boards
@@ -25,6 +39,7 @@ int main(void) {
   GUI_init(DEFAULT_BRIGHTNESS); // Initialisierung des LCD Boards mit Touch
   ledInit();
   inputInit(); //Timer Starten
+  measureInit(); //Messpin PE0
 
   // Begruessungstext
   lcdGotoXY(0, 0);
@@ -34,6 +49,15 @@ int main(void) {
   lcdGotoXY( 0, 3);
   lcdPrintS("Geschw.:            Grad/s");
 
+#if ZEIT_ANZEIGEN
+  lcdGotoXY(0, 7);
+  lcdPrintS("Display Ausgabe:        us");
+  lcdGotoXY(0, 8);
+  lcdPrintS("Loop max ohne Disp.:    us");
+  lcdGotoXY( 0, 9);
+  lcdPrintS("Loop max mit Disp.:     us");
+#endif
+
   //Startzustand mit aktueller Phase + Zeit
   InputData start = inputRead();
   encoderInit(start.phase, start.zeit);
@@ -41,12 +65,37 @@ int main(void) {
 
   int displayNeu = 1; //Display einmalig aufjedenfall beschreiben
   int fehlerAngezeigt = 0;
+
+  //Zeitmessung
+  uint64_t letzteLoopZeit = start.zeit;
+  int letzterLoopMitDisplay = 0;
+  uint64_t maxLoopOhneDisplay = 0;
+  uint64_t maxLoopMitDisplay = 0;
    
    
   while (1) {
     //1) Einlesen
     InputData eingabe = inputRead();
 
+#if MESSPIN_MODUS == 2
+    measuretoggle(); //jede Flanke = Beginn Durchlauf
+#endif
+
+    //Dauer letzter Durchlafu = Zeit zum Einlesen
+    uint64_t loopDauer = eingabe.zeit - letzteLoopZeit;
+    letzteLoopZeit = eingabe.zeit;
+    if(letzterLoopMitDisplay == 1){
+      if(loopDauer > maxLoopMitDisplay){
+        maxLoopMitDisplay = loopDauer;
+      }
+    }else{
+      if(loopDauer > maxLoopOhneDisplay){
+        maxLoopOhneDisplay = loopDauer;
+      }
+    }
+    letzterLoopMitDisplay = 0;
+    
+    
     //2)Update
     //reset
     if(eingabe.resetGedrueckt){
@@ -60,10 +109,13 @@ int main(void) {
         lcdPrintS("                                ");
         fehlerAngezeigt =0;
       }
+      maxLoopMitDisplay = 0;
+      maxLoopOhneDisplay = 0;
       displayNeu = 1;
     } else{
       encoderUpdate(eingabe.phase, eingabe.zeit);
     }
+
 
     //3)ausgeben
     if(encoderHasError()){
@@ -88,6 +140,14 @@ int main(void) {
       //Display updaten WENN count geändert
       if(neuerWert || displayNeu){
         char text[16];
+
+
+        //Messen der Display Ausgabe
+#if MESSPIN_MODUS == 1
+          measureHigh();
+#endif
+        uint64_t displayStart = inputRead().zeit; //Messung vor beginn
+
         //wandelt angle in text um
         snprintf(text, sizeof(text), "%10.1f", calcAngle(count));
         lcdGotoXY(9, 2);
@@ -97,6 +157,31 @@ int main(void) {
         lcdGotoXY(9, 3);
         lcdPrintS(text);
 
+        uint64_t displayDauer = inputRead().zeit - displayStart;
+
+#if MESSPIN_MODUS == 1
+          measureLow();
+#endif
+        //Ende Messung Display
+#if ZEIT_ANZEIGEN
+          //messwärte anzeigen
+          snprintf(text, sizeof(text), "%6lu", (unsigned long)(displayDauer / TICKS_PRO_US));
+          lcdGotoXY(19,7);
+          lcdPrintS(text);
+
+          snprintf(text, sizeof(text), "%6lu", (unsigned long)(maxLoopOhneDisplay / TICKS_PRO_US));
+          lcdGotoXY(19, 8);
+          lcdPrintS(text);
+
+          snprintf(text, sizeof(text), "%6lu", (unsigned long)(maxLoopMitDisplay / TICKS_PRO_US));
+          lcdGotoXY(19, 9);
+          lcdPrintS(text);
+        
+#else
+          (void)displayDauer; //ungenutzt wenn nichts angezeigt wird
+#endif
+        
+        letzterLoopMitDisplay = 1; //nächste Loopdauer gehört zu mit Display
         displayNeu = 0;
       }
     }

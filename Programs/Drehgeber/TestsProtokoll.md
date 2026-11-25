@@ -31,4 +31,30 @@ Test 5: Winkel / Winkelgeschwindigkeit
     ->falsche Winkel, fehler im code behoben
     ->-360, 20s nur 126 grad. Textausgabe lcdPrintS dauert zu lange. später fixen!!!
 
-Test 5:
+Test 5: Zeitmessung (vorerst ohne Oszilloskop)
+        measure.c: Steuert Messpin PG0 = AUX0
+        main: Modi zur Messung mit und ohne Oszilloskop
+    
+        ->ZUHAUSE:
+        -> Test zuhause: Mess LED scheint zu funktionieren
+        -> Test -360, 20s
+            -> Display Ausgabe:  108.145 qs
+            ->Loop max ohne Display: 3 qs
+            ->Loop max mit Display: 218.512 qs //etwas größer da Print von mess auch Zeit kostet
+        -> Test -360, 1s
+            -> Display Ausgabe:  108.169 qs
+            ->Loop max ohne Display: 3 qs
+            ->Loop max mit Display: 313.253 qs
+        -> Test -360, 100s
+            -> Display Ausgabe:  108.169 qs
+            ->Loop max ohne Display: 3 qs 
+            ->Loop max mit Display: 218.258 qs
+        //Display Ausgabe relativ gleichbleibend, klar da unabhängig von Geschwindigkeit
+
+        ->Verhältniss ca 36.000 : 1
+        ->Maximale Geschwindigkeit ohne Phasenverlust:
+            mit Display: 0,3° / 108ms = 2,8 °/s
+            ohne Display: 0,3° / 3 qs = 100.000 °/s
+
+
+Muss noch! Zeit messen mit Oszilloskop!

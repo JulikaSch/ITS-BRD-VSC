@@ -184,6 +184,7 @@ project:
         - file: Src/ledOutput.c
         - file: Src/encoder.c
         - file: Src/calc.c
+        - file: Src/measure.c
 
 
   components:
