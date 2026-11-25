@@ -1,6 +1,7 @@
 //encoder.c
 
 #include "encoder.h"
+#include <stdint.h>
 
 
 
@@ -9,20 +10,22 @@
 
 static PhaseId altePhase = PHASE_A;
 static int32_t count = 0;
+static uint64_t countZeit = 0;
 static Direction richtung = DIR_UNKNOWN;
 static bool error = false ;
 
 
 //Startzustand , auch reset mit S6
-void encoderInit(PhaseId startPhase){
+void encoderInit(PhaseId startPhase, uint64_t startZeit){
     altePhase = startPhase;
     count = 0;
+    countZeit = startZeit;
     richtung = DIR_UNKNOWN;
     error = false;
 }
 
 //pro Superloop mit eingelesener Phase aufrufen
-void encoderUpdate(PhaseId phase){
+void encoderUpdate(PhaseId phase, uint64_t zeit){
 
     //fehler oder keine änderung
     if (error || (phase==altePhase)){
@@ -36,10 +39,12 @@ void encoderUpdate(PhaseId phase){
         //vor
         count++;
         richtung = DIR_FORWARD;
+        countZeit = zeit;
     } else if(diff == 3){
         //back
         count--;
         richtung = DIR_BACKWARD;
+        countZeit = zeit;
     } else{
         error = true;
     }
@@ -61,4 +66,9 @@ Direction encoderGetDirection(void){
 //true, falls Phase übersprungen
 bool encoderHasError(void){
     return error;
+}
+
+//timestamp
+uint64_t encoderGetCountTime(void){
+    return countZeit;
 }

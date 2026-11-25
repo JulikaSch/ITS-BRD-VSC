@@ -183,6 +183,7 @@ project:
         - file: Src/input.c
         - file: Src/ledOutput.c
         - file: Src/encoder.c
+        - file: Src/calc.c
 
 
   components:

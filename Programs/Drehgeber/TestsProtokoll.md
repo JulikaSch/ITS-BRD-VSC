@@ -18,4 +18,17 @@ Test 4: Richtungs LEDs, Error LED, Reset mit S6
     -main: update: Error->Stopp, S6->encoderinit()
     -types.h: update struct Inputdata{Phase, S6}
     -input update: readphase->read, S6
-    
+
+    ->alles wie gewollt
+
+Test 5: Winkel / Winkelgeschwindigkeit
+    -types.h: Inputdata hat Feld zeit, ticks pro Sekunde
+    -input: Liest Zeitstemptel nach Port F. 32 bit Timer umgerechnet in 64 bit gegen overflow
+    -endcoder: countZeit und getZeit()
+    -NEU calc: calcAngle(), calcUpdate(), Zählerstempel
+    -main: Winkel + velo wird angezeigt, update nur bei calcUpdate. LEDs laufen weiter
+
+    ->falsche Winkel, fehler im code behoben
+    ->-360, 20s nur 126 grad. Textausgabe lcdPrintS dauert zu lange. später fixen!!!
+
+Test 5:

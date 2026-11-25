@@ -7,7 +7,10 @@
 #include "types.h"
 
 
-//Liest Port F A,B,S6 Einmal ein und gibt Phase und Zustand von S6 zurück
+//Liest Port F A,B,S6 Einmal ein und gibt Phase und Zustand von S6 und Zeitstempel zurück
+//Muss häufig (min 47 s) aufegrufen werden, damit Zeit stimmt
 InputData inputRead(void);
 
+//Zeit auf 0
+void inputInit(void);
 #endif

@@ -11,32 +11,35 @@
 #include "init.h"
 #include "lcd.h"
 #include "stm32f4xx_hal.h"
-#include <stdint.h>
 #include <stdio.h>
 
 #include "input.h"
 #include "ledOutput.h"
 #include "types.h"
 #include "encoder.h"
+#include "calc.h"
 
 int main(void) {
   initITSboard(); // Initialisierung des ITS Boards
 
   GUI_init(DEFAULT_BRIGHTNESS); // Initialisierung des LCD Boards mit Touch
   ledInit();
+  inputInit(); //Timer Starten
 
   // Begruessungstext
   lcdGotoXY(0, 0);
-  lcdPrintS("Zaehler Test");
+  lcdPrintS("Drehgeber");
   lcdGotoXY(0, 2);
-  lcdPrintS("Zaehler:");
+  lcdPrintS("Winkel:             Grad");
   lcdGotoXY( 0, 3);
-  lcdPrintS("Richtung");
+  lcdPrintS("Geschw.:            Grad/s");
 
-  encoderInit(inputRead().phase);
+  //Startzustand mit aktueller Phase + Zeit
+  InputData start = inputRead();
+  encoderInit(start.phase, start.zeit);
+  calcInit(start.zeit, 0, start.zeit);
 
-  int32_t oldCount = 0;
-  int ersterDurchlauf = 1;
+  int displayNeu = 1; //Display einmalig aufjedenfall beschreiben
   int fehlerAngezeigt = 0;
    
    
@@ -47,7 +50,8 @@ int main(void) {
     //2)Update
     //reset
     if(eingabe.resetGedrueckt){
-      encoderInit(eingabe.phase);
+      encoderInit(eingabe.phase, eingabe.zeit);
+      calcInit(eingabe.zeit, 0, eingabe.zeit);
       ledShowError(false);
     
       //falls nötig fehlermeldung löschen
@@ -56,9 +60,9 @@ int main(void) {
         lcdPrintS("                                ");
         fehlerAngezeigt =0;
       }
-      ersterDurchlauf = 1;
+      displayNeu = 1;
     } else{
-      encoderUpdate(eingabe.phase);
+      encoderUpdate(eingabe.phase, eingabe.zeit);
     }
 
     //3)ausgeben
@@ -79,26 +83,21 @@ int main(void) {
       //D22 oder D23
       ledShowDirection(encoderGetDirection());
 
+      bool neuerWert = calcUpdate(eingabe.zeit, count, encoderGetCountTime());
 
       //Display updaten WENN count geändert
-      if(count != oldCount || ersterDurchlauf == 1){
+      if(neuerWert || displayNeu){
         char text[16];
-        //wandelt count in text um
-        snprintf(text, sizeof(text), "%6d", (int)count);
-        lcdGotoXY(10, 2);
+        //wandelt angle in text um
+        snprintf(text, sizeof(text), "%10.1f", calcAngle(count));
+        lcdGotoXY(9, 2);
+        lcdPrintS(text);
+        //speed
+        snprintf(text, sizeof(text), "%10.1f", calcGetSpeed());
+        lcdGotoXY(9, 3);
         lcdPrintS(text);
 
-        lcdGotoXY(10, 3);
-        if(encoderGetDirection() == DIR_FORWARD){
-          lcdPrintS("vorwaerts  ");
-        } else if(encoderGetDirection() == DIR_BACKWARD){
-          lcdPrintS("rueckwaerts");
-        } else{
-          lcdPrintS("unbekannt  ");
-        }
-
-        oldCount=count;
-        ersterDurchlauf=0;
+        displayNeu = 0;
       }
     }
  
