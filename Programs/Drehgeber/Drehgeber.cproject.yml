@@ -185,6 +185,7 @@ project:
         - file: Src/encoder.c
         - file: Src/calc.c
         - file: Src/measure.c
+        - file: Src/display.c
 
 
   components:

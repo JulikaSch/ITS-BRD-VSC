@@ -56,5 +56,11 @@ Test 5: Zeitmessung (vorerst ohne Oszilloskop)
             mit Display: 0,3° / 108ms = 2,8 °/s
             ohne Display: 0,3° / 3 qs = 100.000 °/s
 
-
-Muss noch! Zeit messen mit Oszilloskop!
+        vergleichen mit Oszilloskop!
+Test 6: Optimierung
+  !!!  //git checkout vor-optimierung
+         um alte version anzusehen
+         git checkout main
+            für optimierte Version
+    
+Muss noch! Zeit messen mit 

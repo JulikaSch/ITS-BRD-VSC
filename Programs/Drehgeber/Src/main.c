@@ -20,6 +20,7 @@
 #include "encoder.h"
 #include "calc.h"
 #include "measure.h"
+#include "display.h"
 
 //Was Messpin PE0 anzeigt
 //1 high wärend Display ausgabe. Impulsbreite = Displayausgabe
@@ -40,37 +41,35 @@ int main(void) {
   ledInit();
   inputInit(); //Timer Starten
   measureInit(); //Messpin PE0
+  displayInit(); //display init
 
   // Begruessungstext
-  lcdGotoXY(0, 0);
-  lcdPrintS("Drehgeber");
-  lcdGotoXY(0, 2);
-  lcdPrintS("Winkel:             Grad");
-  lcdGotoXY( 0, 3);
-  lcdPrintS("Geschw.:            Grad/s");
-
-#if ZEIT_ANZEIGEN
+  #if ZEIT_ANZEIGEN
   lcdGotoXY(0, 7);
-  lcdPrintS("Display Ausgabe:        us");
+  lcdPrintS("Display-Ausg. max:      us");
   lcdGotoXY(0, 8);
   lcdPrintS("Loop max ohne Disp.:    us");
   lcdGotoXY( 0, 9);
   lcdPrintS("Loop max mit Disp.:     us");
-#endif
+  #endif
 
   //Startzustand mit aktueller Phase + Zeit
   InputData start = inputRead();
   encoderInit(start.phase, start.zeit);
   calcInit(start.zeit, 0, start.zeit);
+  displaySetValues(0.0, 0.0); //Startwärte in Puffer
 
-  int displayNeu = 1; //Display einmalig aufjedenfall beschreiben
+ 
   int fehlerAngezeigt = 0;
 
   //Zeitmessung
   uint64_t letzteLoopZeit = start.zeit;
   int letzterLoopMitDisplay = 0;
+  int letzterLoopNichtZaehlen = 0; //Durchlauf mit Messwert Anzeige, nicht mitzählen
   uint64_t maxLoopOhneDisplay = 0;
   uint64_t maxLoopMitDisplay = 0;
+  uint64_t maxDisplayDauer = 0;
+  int messwerteAngezeigt = 0;
    
    
   while (1) {
@@ -84,17 +83,19 @@ int main(void) {
     //Dauer letzter Durchlafu = Zeit zum Einlesen
     uint64_t loopDauer = eingabe.zeit - letzteLoopZeit;
     letzteLoopZeit = eingabe.zeit;
-    if(letzterLoopMitDisplay == 1){
-      if(loopDauer > maxLoopMitDisplay){
-        maxLoopMitDisplay = loopDauer;
-      }
-    }else{
-      if(loopDauer > maxLoopOhneDisplay){
-        maxLoopOhneDisplay = loopDauer;
+    if(letzterLoopNichtZaehlen == 0){
+      if(letzterLoopMitDisplay == 1){
+        if(loopDauer > maxLoopMitDisplay){
+          maxLoopMitDisplay = loopDauer;
+        }
+      }else{
+        if(loopDauer > maxLoopOhneDisplay){
+          maxLoopOhneDisplay = loopDauer;
+        }
       }
     }
     letzterLoopMitDisplay = 0;
-    
+    letzterLoopNichtZaehlen = 0;
     
     //2)Update
     //reset
@@ -102,6 +103,7 @@ int main(void) {
       encoderInit(eingabe.phase, eingabe.zeit);
       calcInit(eingabe.zeit, 0, eingabe.zeit);
       ledShowError(false);
+      displaySetValues(0.0, 0.0);
     
       //falls nötig fehlermeldung löschen
       if(fehlerAngezeigt == 1){
@@ -109,9 +111,12 @@ int main(void) {
         lcdPrintS("                                ");
         fehlerAngezeigt =0;
       }
+
+      //Messwertezurücksetzen
       maxLoopMitDisplay = 0;
       maxLoopOhneDisplay = 0;
-      displayNeu = 1;
+      maxDisplayDauer = 0;
+      letzterLoopNichtZaehlen = 1; //reset nicht mit
     } else{
       encoderUpdate(eingabe.phase, eingabe.zeit);
     }
@@ -135,12 +140,13 @@ int main(void) {
       //D22 oder D23
       ledShowDirection(encoderGetDirection());
 
-      bool neuerWert = calcUpdate(eingabe.zeit, count, encoderGetCountTime());
+      //neuer Wert alle 300ms in Puffer schreiben
+     if(calcUpdate(eingabe.zeit,count,encoderGetCountTime())){
+      displaySetValues(calcAngle(count), calcGetSpeed());
+     }
+    }
 
-      //Display updaten WENN count geändert
-      if(neuerWert || displayNeu){
-        char text[16];
-
+      
 
         //Messen der Display Ausgabe
 #if MESSPIN_MODUS == 1
@@ -148,45 +154,46 @@ int main(void) {
 #endif
         uint64_t displayStart = inputRead().zeit; //Messung vor beginn
 
-        //wandelt angle in text um
-        snprintf(text, sizeof(text), "%10.1f", calcAngle(count));
-        lcdGotoXY(9, 2);
-        lcdPrintS(text);
-        //speed
-        snprintf(text, sizeof(text), "%10.1f", calcGetSpeed());
-        lcdGotoXY(9, 3);
-        lcdPrintS(text);
-
-        uint64_t displayDauer = inputRead().zeit - displayStart;
-
+        bool ausgegeben = displayProcess();
+    uint64_t displayDauer = inputRead().zeit - displayStart;
 #if MESSPIN_MODUS == 1
-          measureLow();
+    measureLow();
 #endif
-        //Ende Messung Display
-#if ZEIT_ANZEIGEN
-          //messwärte anzeigen
-          snprintf(text, sizeof(text), "%6lu", (unsigned long)(displayDauer / TICKS_PRO_US));
-          lcdGotoXY(19,7);
-          lcdPrintS(text);
-
-          snprintf(text, sizeof(text), "%6lu", (unsigned long)(maxLoopOhneDisplay / TICKS_PRO_US));
-          lcdGotoXY(19, 8);
-          lcdPrintS(text);
-
-          snprintf(text, sizeof(text), "%6lu", (unsigned long)(maxLoopMitDisplay / TICKS_PRO_US));
-          lcdGotoXY(19, 9);
-          lcdPrintS(text);
-        
-#else
-          (void)displayDauer; //ungenutzt wenn nichts angezeigt wird
-#endif
-        
-        letzterLoopMitDisplay = 1; //nächste Loopdauer gehört zu mit Display
-        displayNeu = 0;
+ 
+    if (ausgegeben) {
+      letzterLoopMitDisplay = 1;
+      if (displayDauer > maxDisplayDauer) {
+        maxDisplayDauer = displayDauer;
       }
     }
  
+#if ZEIT_ANZEIGEN
+    // Messwerte erst nach 3 s ohne Phasenwechsel anzeigen. 
+    // Dann dreht sich nichts, und durch die langsame Anzeige geht nichts verloren.
+    bool stillstand = (eingabe.zeit - encoderGetCountTime()) >= (3ULL * TICKS_PRO_SEKUNDE);
+ 
+    if (stillstand && messwerteAngezeigt == 0) {
+      char text[16];
+      snprintf(text, sizeof(text), "%6lu", (unsigned long)(maxDisplayDauer / TICKS_PRO_US));
+      lcdGotoXY(19, 7);
+      lcdPrintS(text);
+      snprintf(text, sizeof(text), "%6lu", (unsigned long)(maxLoopOhneDisplay / TICKS_PRO_US));
+      lcdGotoXY(19, 8);
+      lcdPrintS(text);
+      snprintf(text, sizeof(text), "%6lu", (unsigned long)(maxLoopMitDisplay / TICKS_PRO_US));
+      lcdGotoXY(19, 9);
+      lcdPrintS(text);
+ 
+      messwerteAngezeigt = 1;
+      letzterLoopNichtZaehlen = 1; // dieser lange Durchlauf zaehlt nicht
+    }
+    if (!stillstand) {
+      messwerteAngezeigt = 0; // nach der naechsten Drehung wieder anzeigen
+    }
+#else
+    (void)messwerteAngezeigt;
+#endif
   }
 }
-
+ 
 // EOF
