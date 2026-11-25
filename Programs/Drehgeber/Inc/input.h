@@ -8,6 +8,6 @@
 
 
 
-PhaseId inptutReadPhase();
+PhaseId inputReadPhase();
 
 #endif
