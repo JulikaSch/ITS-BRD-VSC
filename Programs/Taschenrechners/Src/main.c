@@ -18,20 +18,14 @@ int main(void) {
    initITSboard(); // Initialisierung des ITS Boards
    init_display();
 
-   //GUI_init(DEFAULT_BRIGHTNESS); // Initialisierung des LCD Boards mit Touch
-   //TP_Init(false); // Initialisierung des LCD Boards mit Touch
+   GUI_init(DEFAULT_BRIGHTNESS); // Initialisierung des LCD Boards mit Touch
+   TP_Init(false); // Initialisierung des LCD Boards mit Touch
+; 
 
-   // Begruessungstext
-   //lcdPrintlnS("Hallo liebes TI-Labor (c-project)"); 
-
-   // Test in Endlosschleife
-  /* const int POLL_DELAY = 10000;
-   while (1) {
-      HAL_Delay(POLL_DELAY);
-   }
-   */
-   int stack[STACK_SIZE];  //Stack als Array,
-   int top = -1;           
+  
+   
+   //int stack[STACK_SIZE];  //Stack als Array,
+   //int top = -1;           
    int error = ERR_OK;
 
    
@@ -40,7 +34,7 @@ int main(void) {
 
       if (error != ERR_OK) {  //Fehler! <-? noch Aktuell?
          if (token.tok == CLEAR) { //checken ob c gedrückt wurde
-            clear(&top);
+            clear();
             set_normal_mode(); 
             error = ERR_OK;
          }
@@ -49,34 +43,34 @@ int main(void) {
 
       switch (token.tok){
       case NUMBER:
-         error = push(stack, &top, token.val); //richtig?
+         error = push(token.val); //richtig?
          break;
       case PLUS:
-         error = stack_add(stack, &top);
+         error = stack_add();
          break;
       case MINUS:
-         error = stack_sub(stack, &top);
+         error = stack_sub();
          break;
       case MULT:
-         error = stack_mul(stack, &top);
+         error = stack_mul();
          break;
       case DIV:
-         error = stack_div(stack, &top);
+         error = stack_div();
          break;
       case PRT:
-         error = print_head(stack, top);
+         error = print_head();
          break;
       case PRT_ALL:
-         error = print_3head(stack, top);
+         error = print_3head();
          break;
       case DOUBLE:
-         error = dub_head(stack, &top);
+         error = dub_head();
          break;
       case SWAP:
-         error = swap_2head(stack, top);
+         error = swap_2head();
          break;
       case CLEAR:
-         clear(&top);
+         clear();
          break;
       case OVERFLOW:
          error = ERR_INPUT_RANGE;

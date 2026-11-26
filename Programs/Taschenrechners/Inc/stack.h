@@ -5,19 +5,19 @@
 
 
 //gibt obertes Element zurück, ändert NICHT länge
-int peek(const int stack[], int top, int depth, int *value);
+int peek(int depth, int *value);
 
 
 
 //Element Hinzufügen
-int push(int stack[], int *top, int value);
+int push(int value);
 
 
 //Element Entfernen
-int pop(const int stack[], int *top, int *value);
+int pop(int *value);
 
 //C, löscht alle Einträge des Stacks
-void clear(int *top);
+void clear(int top);
 
 
 #endif 
