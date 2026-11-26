@@ -21,15 +21,21 @@ int print_head(void){ //=p
 int print_3head(void){ 
     int val[3];
     char str[16];
+    int countval = 0;
 
     //erst 3 lesen falls in [2] = error
     for(int i=0; i<3; i++){
+        
         int error = peek(i, &val[i]);
         if (error != ERR_OK) {
          return error; 
         }
+        if (peek(i+1, &val[i]) != ERR_OK){
+            break;
+        }
+        countval++;
     }
-    for (int i = 2; i >= 0; i--) {
+    for (int i = countval; i >= 0; i--) {
         snprintf(str, sizeof(str), "%d\n", val[i]);
         print_stdout(str);
     }

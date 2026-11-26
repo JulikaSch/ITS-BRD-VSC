@@ -4,6 +4,7 @@
 #include <limits.h>
 
 //liest die obersten beiden Values auf Stack aus
+//NOLINT(readability-identifier-length)
 int get_operands(int *a, int *b) {
     int error = peek(0, a);
     if (error != ERR_OK) {
@@ -35,10 +36,10 @@ int stack_add(void){
     }
     if ((a > 0 && b > INT_MAX - a) || (a < 0 && b < INT_MIN - a)){  //overflow error
         return ERR_RANGE;
-    }else{
-        error = replace_operands(b + a);
-        return error;
     }
+    error = replace_operands(b + a);
+    return error;
+    
 }
 
 //nimmt zwei Werte vom Stack, subtrahiert vom zweiten Wert den ersten
@@ -53,10 +54,9 @@ int stack_sub(void){
     //
     if ((a < 0 && b > INT_MAX + a) || (a > 0 && b < INT_MIN + a)){  
         return ERR_RANGE;
-    }else{
-        error= replace_operands(b-a);
-        return error;
     }
+    error= replace_operands(b-a);
+    return error;
 }
 
 //nimmt zwei Werte vom Stack und legt deren Produkt wieder auf dem Stack ab.
