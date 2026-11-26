@@ -17,7 +17,7 @@ int push(int value);
 int pop(int *value);
 
 //C, löscht alle Einträge des Stacks
-void clear(int top);
+void clear();
 
 
 #endif 

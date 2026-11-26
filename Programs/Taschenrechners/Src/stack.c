@@ -35,6 +35,6 @@ int peek(int depth, int *value) {
    return ERR_OK;
 }
 
-void clear(int top) {
+void clear() {
     top = -1;
 }

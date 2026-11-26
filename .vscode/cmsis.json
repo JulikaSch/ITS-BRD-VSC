@@ -7,6 +7,6 @@
             "activeTargetType": "ITSboard"
         }
     },
-    "activeSolution": "../Programs/Drehgeber/Drehgeber.csolution.yml",
+    "activeSolution": "../Programs/Taschenrechners/Taschenrechners.csolution.yml",
     "activeTarget": "ITSboard"
 }

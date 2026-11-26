@@ -28,7 +28,7 @@
             "type": "cmsis-csolution.pyocd",
             "command": "pyocd",
             "options": {
-                "cwd": "${workspaceFolder}/Programs/Drehgeber"
+                "cwd": "${workspaceFolder}/Programs/Taschenrechners"
             },
             "args": [
                 "erase",
@@ -45,7 +45,7 @@
             "type": "cmsis-csolution.pyocd",
             "command": "pyocd",
             "options": {
-                "cwd": "${workspaceFolder}/Programs/Drehgeber"
+                "cwd": "${workspaceFolder}/Programs/Taschenrechners"
             },
             "args": [
                 "load",
@@ -61,7 +61,7 @@
             "type": "cmsis-csolution.pyocd",
             "command": "pyocd",
             "options": {
-                "cwd": "${workspaceFolder}/Programs/Drehgeber"
+                "cwd": "${workspaceFolder}/Programs/Taschenrechners"
             },
             "args": [
                 "gdbserver",
@@ -91,12 +91,11 @@
             "type": "shell",
             "command": "pyocd",
             "options": {
-                "cwd": "${workspaceFolder}/Programs/Drehgeber",
+                "cwd": "${workspaceFolder}/Programs/Taschenrechners",
                 "shell": {
-                    "executable": "cmd.exe",
+                    "executable": "/bin/bash",
                     "args": [
-                        "/d",
-                        "/c"
+                        "-c"
                     ]
                 }
             },
